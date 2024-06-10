@@ -47,3 +47,27 @@ do
             sed -i "s/EPAISSEUR/$ymax/g" ~/Escritorio/Vacaciones/$dir/capillary.c
             sed -i "s/LONGUEUR/$zmax/g" ~/Escritorio/Vacaciones/$dir/capillary.c
             sed -i "s/double a = J;/double a = $j;/g" ~/Escritorio/Vacaciones/$dir/capillary.c
+            sed -i "s/double b = I;/double b = $i;/g" ~/Escritorio/Vacaciones/$dir/capillary.c
+            sed -i "s/EPAISSEUR/$ymax/g" ~/Escritorio/Vacaciones/$dir/Drop_position.c
+            sed -i "s/LONGUEUR/$zmax/g" ~/Escritorio/Vacaciones/$dir/Drop_position.c
+            sed -i "s/size 3_EPAISSEUR_LONGUEUR/size 3_${ymax}_${zmax}/g" ~/Escritorio/Vacaciones/$dir/input
+            sed -i "s/freq_phi FREQPHI/freq_phi $freq_data/g" ~/Escritorio/Vacaciones/$dir/input
+            sed -i "s/freq_vel/freq_vel $freq_data/g" ~/Escritorio/Vacaciones/$dir/input
+            sed -i "s/block_dimension    BLOCK/block_dimension    $block/g" ~/Escritorio/Vacaciones/$dir/input
+            sed -i "s/fP_amplplitude 0.00_0.00_FORCE/fP_amplitude 0.00_0.00_$force/g" ~/Escritorio/Vacaciones/$dir/input
+            sed -i "s/VISC1/$mu1/g" ~/Escritorio/Vacaciones/$dir/input
+            sed -i "s/VISC2/$mu2/g" ~/Escritorio/Vacaciones/$dir/input
+            sed -i "N_cycles CYCLES/N_cycles ${lud_step}/g" ~/Escritorio/Vacaciones/$dir/input
+            gcc capillary.c -lm -o capillary.exe
+            ./capillary.exe
+            ulimit -s unlimited
+            mpirun -np 8 ./Ludwig.exe input
+            chmod +x Analisis.sh
+            ./Analisis.sh
+            cd ~/Escritorio/Vacaciones
+            done
+        fi
+            continue
+    done
+done
+
