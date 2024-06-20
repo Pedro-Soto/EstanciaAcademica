@@ -10,5 +10,5 @@ int main() {
     int amp;
     printf("Enter the value b_0: ");
     scanf("%d", &amp);
-    printf("You entered; %d\n", amp);
+    printf("You entered: %d\n", amp);
 }
