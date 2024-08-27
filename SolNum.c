@@ -61,6 +61,9 @@ int main () {
     }
     printf("deltaP = %f\n", deltaP);
     float pressure_grad = deltaP / L;
-    
+
+    // Agregar una forma de leer b_., eta1, eta2, L, delta,  de canal de capillary.c
+    printf("Enter value of")
+    Float R1 = 12.0 / (b0 * b0) * eta1 * (z1/2.0)
     return 0;
 }
