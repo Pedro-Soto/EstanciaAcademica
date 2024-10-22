@@ -3,6 +3,7 @@ echo "Tamaño promedio de canal"
 echo "Iniciando en "; read start
 echo "Terminando en: "; read end
 echo "zmax?"; read zmax
+base_dir=~/Desktop/Resultados
 if (($zmax % 8 > 0)); then
 	echo "This value is not multiple of 8, and will be made so"
 	remainder=$(($zmax % 8))
@@ -49,9 +50,10 @@ fi
 				declare freq_data=$(printf "%.0f" "$data_div")
 				echo "Data output every $freq_data steps"
 				dir=Tam_Prom_$i/Amp_$j/Visc_$k
-				if [ -d ~/Desktop/Resultados/$dir ]; then
-					echo "Directory ~/Desktop/Resultados/$dir already exists, skipping..."
-					continue
+				full_dir="$base_dir/$dir"
+				if [ -d "$full_dir" ]; then
+    				echo "Directory $full_dir already exists, skipping..."
+    				continue
 				fi
 				mkdir -p ~/Escritorio/Resultados/$dir
 				cd ~/Escritorio/Resultados/$dir/
