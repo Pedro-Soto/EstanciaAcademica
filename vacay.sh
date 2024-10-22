@@ -3,10 +3,10 @@ echo "Tamaño promedio de canal"
 echo "Iniciando en "; read start
 echo "Terminando en: "; read end
 echo "zmax?"; read zmax
-if (($zmax % 24 > 0)); then
-	echo "This value is not multiple of 24, and will be made so"
-	remainder=$(($zmax % 24))
-	add=$((24-remainder))
+if (($zmax % 8 > 0)); then
+	echo "This value is not multiple of 8, and will be made so"
+	remainder=$(($zmax % 8))
+	add=$((8-remainder))
 	zmax=$zmax+$add
 	echo "Upated zmax value: $zmax"
 fi
@@ -24,9 +24,19 @@ fi
 		for (( j=1; j<=amp_max; j+=1))
 		do
 			declare ymax=$(($i+2*$j+3))
+			if (($ymax % 8 > 0)); then
+				echo "ymax value is not multiple of 8, and will be made so"
+				remainder=$(($ymax % 8))
+				echo "Remainder is $remainder"
+				add=$((8-remainder))
+				echo "Adding $add"
+				ymax=$(($ymax + $add))
+			fi
+			echo "Upated ymax value: $ymax"
 			if [ $(($i-2*$j)) -gt 10 ]; then
 				for (( k=0; k<=3; k+=1))
 				do
+				start_time=$(date +%s%N)
 				declare mu2=$(echo "10^-$k" | bc)
 				declare i2=$((i*i))
 				declare xeta1=$mu1*0.5
@@ -35,8 +45,14 @@ fi
 				declare K=$(echo "$i2/$sum_xeta" | bc)
 				declare v=$(echo "$K*$force" | bc)
 				declare t=$(printf "%d" $(echo "2*$zmax/$v" | bc))
-				declare freq_data=$(printf "%d" $(echo "scale=2; $t / $lud_export" | bc))
+				declare data_div=$(echo "scale=2; $t / $lud_export" | bc)
+				declare freq_data=$(printf "%.0f" "$data_div")
+				echo "Data output every $freq_data steps"
 				dir=Tam_Prom_$i/Amp_$j/Visc_$k
+				if [ -d ~/Desktop/Resultados/$dir ]; then
+					echo "Directory ~/Desktop/Resultados/$dir already exists, skipping..."
+					continue
+				fi
 				mkdir -p ~/Escritorio/Resultados/$dir
 				cd ~/Escritorio/Resultados/$dir/
 				cp -R ~/Escritorio/Resultados/Files/* ~/Escritorio/Resultados/$dir
@@ -61,10 +77,15 @@ fi
 				gcc capillary.c -lm -o capillary.exe
 				./capillary.exe
 				ulimit -s unlimited
-				./Ludwig.exe input
+				mpirun -np 8 ./Ludwig.exe input
 				
 				##This part moves de $dir to storage
-				mv ~/Escritorio/Resultados/Tam_Prom_$i /media/pedro/Frida/PSR/
+				#mv~/Escritorio/Resultados/Tam_Prom_$i /media/pedro/Frida/PSR/
+				end_time=$(date +%s%N)
+
+				# Calculate the elapsed time
+                elapsed_time=$(( (end_time - start_time) / 1000000 ))
+				echo "Time taken for iteration (i=$i, j=$j, k=$k): $elapsed_time ms"
 				cd ~/Escritorio/Resultados
 				done
 			fi
