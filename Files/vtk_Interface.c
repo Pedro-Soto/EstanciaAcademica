@@ -31,7 +31,7 @@ int output_ek_rho_ = 0;        /* Switch for EK number densities output */
 
 int is_velocity_ = 0;          /* Switch to identify velocity field */
 
-int output_index_ = 0;         /* For ASCII output, include (i,j,k) indices */
+int output_index_ = 1;         /* For ASCII output, include (i,j,k) indices */
 int vtk_header = 0;            /* For visualisation with Paraview */
 int output_cmf_ = 0;           /* Flag for output in column-major format */
 
