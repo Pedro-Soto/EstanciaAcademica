@@ -676,6 +676,8 @@ void write_data(FILE * fp_data, int n[3], double * data) {
       for (jc = 0; jc < n[1]; jc++) {
         for (kc = 0; kc < n[2]; kc++) {
 
+if (ic == 1)
+{
           if (output_index_) {
             /* Add the global (i,j,k) index starting at 1 each way */
             fprintf(fp_data, "%4d %4d %4d ", 1 + ic, 1 + jc, 1 + kc);
@@ -686,6 +688,8 @@ void write_data(FILE * fp_data, int n[3], double * data) {
             index++;
           }
           fprintf(fp_data, "%13.6e\n", *(data + index));
+}
+
           index++;
         }
       }
