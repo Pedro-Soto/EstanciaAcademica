@@ -1,7 +1,14 @@
 # if wall values not updated updates
-read j i < <(awk '/double a =/ {print $4} /double b =/ {print $4}' capillary.c)
-sed -i "s/double a = J;/double a = $j;/g" ~/Escritorio/Resultados/$dir/vtk_Interface.c
-sed -i "s/double b = I;/double b = $i;/g" ~/Escritorio/Resultados/$dir/vtk_Interface.c
+
+# Extract the value of a and store it in j
+j=$(grep "double a =" capillary.c | sed -E 's/.*= ([0-9.-]+);/\1/')
+
+# Extract the value of b and store it in i
+i=$(grep "double b =" capillary.c | sed -E 's/.*= ([0-9.-]+);/\1/')
+
+
+sed -i "s/double a = J;/double a = $j;/g" vtk_Interface.c
+sed -i "s/double b = I;/double b = $i;/g" vtk_Interface.c
 #Compile the extraction program
 gcc -o vtk_Interface.exe vtk_Interface.c -lm 
 
