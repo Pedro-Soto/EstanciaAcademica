@@ -62,6 +62,8 @@ fi
 				sed -i "s/LONGUEUR/$zmax/g" ~/Escritorio/Resultados/$dir/capillary.c
 				sed -i "s/double a = J;/double a = $j;/g" ~/Escritorio/Resultados/$dir/capillary.c
 				sed -i "s/double b = I;/double b = $i;/g" ~/Escritorio/Resultados/$dir/capillary.c
+				sed -i "s/double a = J;/double a = $j;/g" ~/Escritorio/Resultados/$dir/vtk_Interface.c
+				sed -i "s/double b = I;/double b = $i;/g" ~/Escritorio/Resultados/$dir/vtk_Interface.c
 				sed -i "s/EPAISSEUR/$ymax/g" ~/Escritorio/Resultados/$dir/Drop_position.c
 				sed -i "s/LONGUEUR/$zmax/g" ~/Escritorio/Resultados/$dir/Drop_position.c
 				sed -i "s/size 3_EPAISSEUR_LONGUEUR/size 3_${ymax}_${zmax}/g" ~/Escritorio/Resultados/$dir/input
