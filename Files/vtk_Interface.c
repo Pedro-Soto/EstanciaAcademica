@@ -656,35 +656,21 @@ void read_data(FILE * fp_data, int n[3], double * data) {
 void write_data(FILE * fp_data, int n[3], double * data) {
 
   int ic, jc, kc, index, nr;
-
-  //Read input to extract ymax
-  FILE *file;
-  char line[2560];
-  int ymax = 0;
-  file = fopen("input", "r");
-  if (file == NULL) {
-    perror("Error opening file");
-    return EXIT_FAILURE;
-  }
-  while (fgets(line, sizeof(line), file)) {
-    if (strncmp(line, "size", 4) == 0 && strstr(line, "_")!= NULL) {
-      char *token = strtok(line, " ");
-      token = strtok(NULL, " ");
-      if (token!= NULL) {
-        char *ymax_str = strtok(token, "_");
-        ymax_str = strtok(NULL, "_");
-        if (ymax_str!= NULL) {
-          ymax = atoi(ymax_str);
-        }
-      }
-      break;
-    }
-  }
-  fclose(file);
-
-  int jc_constant = ymax / 2;
+  int jc_constant = n[1]/2;
+  int ymax = n[1];
+  int zmax = n[2];
+  //////////Adding ywall limitations to jc/////////
+  double b = I;
+	  
+	  // Returns the centre of the canal
+	  double j_centre = (ymax / 2);
+	  
+	  // Returns maximum sinusoidal wall amplitude
+	  double a = J;
   /////////////////////////////////////////////////
-  
+  #ifndef M_PI
+  #define M_PI 3.14159265358979323846
+  #endif
   index = 0;
 
   if (output_binary_) {
@@ -704,11 +690,17 @@ void write_data(FILE * fp_data, int n[3], double * data) {
       for (jc = 0; jc < n[1]; jc++) {
         for (kc = 0; kc < n[2]; kc++) {
 
-if (ic == 1)
-{
+if (ic == 1) { 
+          // Defines a  side wall function for each z value
+	        double wall_right = j_centre + (b / 2) + a * sin(2 * M_PI * kc / zmax);
+	        double wall_left = j_centre - (b / 2) + a * sin(-2 * M_PI * kc / zmax); 
+          if (jc <= wall_left || jc >= wall_right){
+            continue;
+          } 
+          else{
           if (output_index_) {
             /* Add the global (i,j,k) index starting at 1 each way */
-            fprintf(fp_data, "%4d %4d %4d ", 1 + ic,jc_constant, 1 + kc);
+            fprintf(fp_data, "%4d %4d %4d ", 1 + ic,1 + jc, 1 + kc);
           }
 
           for (nr = 0; nr < nrec_ - 1; nr++) {
@@ -716,10 +708,13 @@ if (ic == 1)
             index++;
           }
           fprintf(fp_data, "%13.6e\n", *(data + index));
+          }
 }
 
           index++;
+          
         }
+        fprintf(fp_data, "\n");
       }
     }
   }
