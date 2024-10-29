@@ -700,7 +700,7 @@ if (ic == 1) {
           else{
           if (output_index_) {
             /* Add the global (i,j,k) index starting at 1 each way */
-            fprintf(fp_data, "%4d %4d %4d ", 1 + ic,1 + jc, 1 + kc);
+            fprintf(fp_data, "%4d %4d %4d ", 1 + ic,jc,kc);
           }
 
           for (nr = 0; nr < nrec_ - 1; nr++) {
