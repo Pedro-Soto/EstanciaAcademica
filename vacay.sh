@@ -1,13 +1,34 @@
 #!/bin/bash
+validate_number() {
+    local input=$1
+    local default=$2
+    local var_name=$3
+    
+    # If input is empty, return default
+    if [[ -z "$input" ]]; then
+        echo "$default"
+        return 0
+    fi    # Changed '}' to 'fi'
+    
+    # Check if the input is a valid number (including decimals)
+    if [[ "$input" =~ ^[0-9]+\.?[0-9]*$ ]]; then
+        echo "$input"
+        return 0
+    else
+        echo "Error: Invalid input for $var_name. Must be a number. Using default value: $default" >&2
+        echo "$default"
+        return 1
+    fi
+}
 
 # Get the current directory
 current_dir=$(pwd)
 echo "Current directory is: $current_dir"
-echo "Is this correct? (y/n)"
+echo "Is this correct? (Press Enter for yes, or type 'n' for no)"
 read agree_dir
 
 # Allow user to change directory if needed
-if [[ "$agree_dir" != "y" ]]; then
+if [[ "$agree_dir" == "n" ]]; then
     echo "Please enter the correct directory path:"
     read base_dir
 else
@@ -18,8 +39,17 @@ fi
 echo "Tamaño promedio de canal"
 
 # Prompt user for input values
-echo "Iniciando en "; read start
-echo "Terminando en: "; read end
+echo "Iniciando en "
+read input_start
+start=$(validate_number "$input_start" "0" "start")
+
+echo "Terminando en: "
+read input_end
+end=$(validate_number "$input_end" "0" "end")
+if [[ "$end" -le "$start" ]]; then
+    echo "Error: End value must be greater than start value"
+    exit 1
+fi
 
 # Set default values
 default_force=0.00002
@@ -27,26 +57,14 @@ default_zmax=4000
 default_lud_export=100  
 
 # Prompt user for confirmation on default force value
-echo "Default force is set to $default_force. Do you agree? (y/n)"
-read agree_force
-
-if [[ "$agree_force" != "y" ]]; then
-    echo "Please enter your desired force value:"
-    read force
-else
-    force=$default_force
-fi
+echo "Default force is set to $default_force. Press Enter to accept, or enter a new value:"
+read force
+force=$(validate_number "$input_force" "$default_force" "force")
 
 # Prompt user for confirmation on default zmax value
-echo "Default zmax is set to $default_zmax. Do you agree? (y/n)"
-read agree_zmax
-
-if [[ "$agree_zmax" != "y" ]]; then
-    echo "Please enter your desired zmax value:"
-    read zmax
-else
-    zmax=$default_zmax
-fi
+echo "Default zmax is set to $default_zmax. Press Enter to accept, or enter a new value:"
+read zmax
+zmax=$(validate_number "$input_zmax" "$default_zmax" "zmax")
 
 # Check if zmax is a multiple of 8 and adjust if necessary
 if (($zmax % 8 > 0)); then
@@ -63,15 +81,9 @@ x1=$((block/zmax))
 x2=$((zmax-block/zmax))
 
 # Prompt for additional parameters
-echo "Default lud_export is set to $default_lud_export. Do you agree? (y/n)"
-read agree_lud_export
-
-if [[ "$agree_lud_export" != "y" ]]; then
-    echo "Please enter your desired lud_export value:"
-    read lud_export
-else
-    lud_export=$default_lud_export
-fi
+echo "Default lud_export is set to $default_lud_export. Press Enter to accept, or enter a new value:"
+read lud_export
+lud_export=$(validate_number "$input_lud_export" "$default_lud_export" "lud_export")
 
 # Declare constants    
 declare step_elongueur=8
@@ -143,15 +155,27 @@ do
                 cp -R ~/Escritorio/Resultados/Files/* ~/Escritorio/Resultados/$dir
 
                 # Modify files with calculated parameters
+				
+					#Modify capillary.c
+				echo "Updating capillary.c"
                 sed -i "s/EPAISSEUR/$ymax/g" ~/Escritorio/Resultados/$dir/capillary.c
                 sed -i "s/LONGUEUR/$zmax/g" ~/Escritorio/Resultados/$dir/capillary.c
                 sed -i "s/double a = J;/double a = $j;/g" ~/Escritorio/Resultados/$dir/capillary.c
                 sed -i "s/double b = I;/double b = $i;/g" ~/Escritorio/Resultados/$dir/capillary.c
+
+					#Modify vtk_Interface.c
+				echo "Updating vtk_Interface.c"
                 sed -i "s/double a = J;/double a = $j;/g" ~/Escritorio/Resultados/$dir/vtk_Interface.c
                 sed -i "s/double b = I;/double b = $i;/g" ~/Escritorio/Resultados/$dir/vtk_Interface.c
-                sed -i "s/EPAISSEUR/$ymax/g" ~/Escritorio/Resultados/$dir/Drop_position.c
+
+					#Modify Drop_position.c
+				echo "Updating Drop_position.c"
+				sed -i "s/EPAISSEUR/$ymax/g" ~/Escritorio/Resultados/$dir/Drop_position.c
                 sed -i "s/LONGUEUR/$zmax/g" ~/Escritorio/Resultados/$dir/Drop_position.c
-                sed -i "s/size 3_EPAISSEUR_LONGUEUR/size 3_${ymax}_${zmax}/g" ~/Escritorio/Resultados/$dir/input
+
+					#Modify input
+                echo "Updating input"
+				sed -i "s/size 3_EPAISSEUR_LONGUEUR/size 3_${ymax}_${zmax}/g" ~/Escritorio/Resultados/$dir/input
                 sed -i "s/freq_phi FREQPHI/freq_phi $freq_data/g" ~/Escritorio/Resultados/$dir/input
                 sed -i "s/freq_vel FREQVEL/freq_vel $freq_data/g" ~/Escritorio/Resultados/$dir/input
                 sed -i "s/block_dimension    BLOCK/block_dimension    $block/g" ~/Escritorio/Resultados/$dir/input
@@ -165,9 +189,13 @@ do
 
                 # Run capillary
                 ./capillary.exe
-				ulimit -s unlimited
-				mpirun -np 8 ./Ludwig.exe input
-                end_time=$(date +%s%N)
+
+				# Run Ludwig
+				#ulimit -s unlimited
+				#mpirun -np 8 ./Ludwig.exe input
+                
+				
+				end_time=$(date +%s%N)
 
                 # Calculate and display execution time
                 execution_time=$(echo "scale=2; ($end_time - $start_time) / 1e9" | bc)
