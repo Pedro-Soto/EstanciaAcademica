@@ -8,7 +8,7 @@ validate_number() {
     if [[ -z "$input" ]]; then
         echo "$default"
         return 0
-    fi    # Changed '}' to 'fi'
+    fi
     
     # Check if the input is a valid number (including decimals)
     if [[ "$input" =~ ^[0-9]+\.?[0-9]*$ ]]; then
@@ -155,7 +155,7 @@ do
                 cp -R ~/Escritorio/Resultados/Files/* ~/Escritorio/Resultados/$dir
 
                 # Modify files with calculated parameters
-				
+
 					#Modify capillary.c
 				echo "Updating capillary.c"
                 sed -i "s/EPAISSEUR/$ymax/g" ~/Escritorio/Resultados/$dir/capillary.c
