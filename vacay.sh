@@ -95,7 +95,7 @@ do
         fi
 
         # Calculate ymax and ensure it's a multiple of 8
-        declare ymax=$((i + 2 * j + arbit))
+        declare ymax=$((i + (2 * j) + arbit))
         if (($ymax % 8 > 0)); then
             echo "ymax value is not multiple of 8, and will be made so"
             remainder=$(($ymax % 8))
