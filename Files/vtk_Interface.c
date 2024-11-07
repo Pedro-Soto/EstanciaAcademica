@@ -31,7 +31,7 @@ int output_ek_rho_ = 0;        /* Switch for EK number densities output */
 
 int is_velocity_ = 0;          /* Switch to identify velocity field */
 
-int output_index_ = 0;         /* For ASCII output, include (i,j,k) indices */
+int output_index_ = 1;         /* For ASCII output, include (i,j,k) indices */
 int vtk_header = 0;            /* For visualisation with Paraview */
 int output_cmf_ = 0;           /* Flag for output in column-major format */
 
@@ -656,7 +656,21 @@ void read_data(FILE * fp_data, int n[3], double * data) {
 void write_data(FILE * fp_data, int n[3], double * data) {
 
   int ic, jc, kc, index, nr;
-
+  int jc_constant = n[1]/2;
+  int ymax = n[1];
+  int zmax = n[2];
+  //////////Adding ywall limitations to jc/////////
+  double b = I;
+	  
+	  // Returns the centre of the canal
+	  double j_centre = (ymax / 2);
+	  
+	  // Returns maximum sinusoidal wall amplitude
+	  double a = J;
+  /////////////////////////////////////////////////
+  #ifndef M_PI
+  #define M_PI 3.14159265358979323846
+  #endif
   index = 0;
 
   if (output_binary_) {
@@ -676,9 +690,17 @@ void write_data(FILE * fp_data, int n[3], double * data) {
       for (jc = 0; jc < n[1]; jc++) {
         for (kc = 0; kc < n[2]; kc++) {
 
+if (ic == 1) { 
+          // Defines a  side wall function for each z value
+	        double wall_right = j_centre + (b / 2) + a * sin(2 * M_PI * kc / zmax);
+	        double wall_left = j_centre - (b / 2) + a * sin(-2 * M_PI * kc / zmax); 
+          if (jc <= wall_left || jc >= wall_right){
+            continue;
+          } 
+          else{
           if (output_index_) {
             /* Add the global (i,j,k) index starting at 1 each way */
-            fprintf(fp_data, "%4d %4d %4d ", 1 + ic, 1 + jc, 1 + kc);
+            fprintf(fp_data, "%4d %4d %4d ", 1 + ic,jc,kc);
           }
 
           for (nr = 0; nr < nrec_ - 1; nr++) {
@@ -686,8 +708,13 @@ void write_data(FILE * fp_data, int n[3], double * data) {
             index++;
           }
           fprintf(fp_data, "%13.6e\n", *(data + index));
+          }
+}
+
           index++;
+          
         }
+        fprintf(fp_data, "\n");
       }
     }
   }
