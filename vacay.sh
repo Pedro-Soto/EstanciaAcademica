@@ -1,5 +1,10 @@
 #!/bin/bash
 ## Code brought to you by PeSesito
+
+
+
+
+
 validate_number() {
     local input=$1
     local default=$2
@@ -159,6 +164,18 @@ amp_max=$(echo "($zmax / 8 * $pi + 0.999999)" | bc)  # Add a small value to roun
 amp_max=$(printf "%.0f" "$amp_max")  # Convert to integer
 
 # Main loop over the range from start to end with a step size
+
+# Display the final configuration
+echo ""
+echo "Final configuration:"
+echo "Start: $start"
+echo "End: $end"
+echo "Number of processors: $num_processors"
+echo "Force: $force"
+echo "Zmax: $zmax"
+echo "Results will be saved in: $move_dir"
+echo ""
+
 for ((i=$start; i<=$end; i+=$step_elongueur))
 do
     # Inner loop for amplitude
