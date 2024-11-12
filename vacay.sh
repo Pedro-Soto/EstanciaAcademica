@@ -64,7 +64,9 @@ total_processors=$(nproc)
 
 read -p "Enter the number of processors to run Ludwig (default is 1): " user_input
 num_processors=$(validate_number "$user_input" 1 "Number of processors")
+echo ""
 echo "Number of processors to run Ludwig: $num_processors"
+echo ""
 if (( num_processors > total_processors )); then
     echo "Error: Number of processors cannot exceed the total number of processors on the system"
     exit 1
@@ -289,5 +291,5 @@ do
     rsync -a --remove-source-files --info=progress2 $base_dir/Tam_Prom_$i "$move_dir"
     
     # After rsync, remove the empty source directory if needed
-    rmdir $base_dir/Tam_Prom_$i 2>/dev/null	
+    find $base_dir/Tam_Prom_$i -type d -empty -delete
 done
