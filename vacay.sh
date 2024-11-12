@@ -1,10 +1,6 @@
 #!/bin/bash
 ## Code brought to you by PeSesito
 
-
-
-
-
 validate_number() {
     local input=$1
     local default=$2
