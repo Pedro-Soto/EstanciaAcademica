@@ -281,8 +281,8 @@ do
     echo ""
     echo "/////////////////////////////////////"
 	# Use rsync to move the directory with a progress bar
-    rsync -a --remove-source-files --info=progress2 ~/Escritorio/Resultados/Tam_Prom_$i "$move_dir"
+    rsync -a --remove-source-files --info=progress2 $base_dir/Tam_Prom_$i "$move_dir"
     
     # After rsync, remove the empty source directory if needed
-    rmdir ~/Escritorio/Resultados/Tam_Prom_$i 2>/dev/null	
+    rmdir $base_dir/Tam_Prom_$i 2>/dev/null	
 done
