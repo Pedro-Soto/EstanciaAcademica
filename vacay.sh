@@ -59,11 +59,40 @@ total_processors=$(nproc)
 
 read -p "Enter the number of processors to run Ludwig (default is 1): " user_input
 num_processors=$(validate_number "$user_input" 1 "Number of processors")
- 
+echo "Number of processors to run Ludwig: $num_processors"
 if (( num_processors > total_processors )); then
     echo "Error: Number of processors cannot exceed the total number of processors on the system"
     exit 1
 fi
+
+# Ask the user if they wish to move results to an external disk
+read -p "Do you wish to move results to an external disk? (y/n): " move_results
+
+if [[ "$move_results" == "y" ]]; then
+    # Check which disks are mounted and their mount points
+    echo "Checking for mounted disks..."
+    mounted_disks=$(lsblk -o NAME,MOUNTPOINT | grep -v "^\s*loop" | grep -v "^\s*$")
+
+    if [[ -z "$mounted_disks" ]]; then
+        echo "No disks are currently mounted."
+    else
+        echo "Mounted disks and their mount points:"
+        echo "$mounted_disks"
+    fi
+
+    # Prompt user for the destination directory with tab completion
+    read -e -p "Please enter the destination directory (e.g., /media/username/disk_name): " dest_dir
+
+    # Create Ludwig_Results directory in the specified destination
+    mkdir -p "$dest_dir/Ludwig_Results"
+    echo "Directory Ludwig_Results created at $dest_dir"
+else
+    dest_dir="."  # Default to current directory if not moving results
+    mkdir -p "$dest_dir/Ludwig_Results"
+fi
+
+move_dir = $dest_dir/Ludwig_Results
+
 
 # Prompt user for confirmation on default force value
 echo "Default force is set to $default_force. Press Enter to accept, or enter a new value:"
@@ -202,9 +231,9 @@ do
                 ./capillary.exe
 
 				# Run Ludwig
-				chmod +x ./Ludwig.exe
-                ulimit -s unlimited
-				mpirun -np $num_processors ./Ludwig.exe input
+				#chmod +x ./Ludwig.exe
+                #ulimit -s unlimited
+				#mpirun -np $num_processors ./Ludwig.exe input
                 
 				
 				end_time=$(date +%s%N)
@@ -219,5 +248,5 @@ do
         fi
     done
 	echo "///////////////////////////////////// \n Moving Tam_Prom_$i to external drive"
-	mv ~/Escritorio/Resultados/Tam_Prom_$i /run/media/pedro/Frida/PSR		
+	mv ~/Escritorio/Resultados/Tam_Prom_$i $move_dir		
 done
