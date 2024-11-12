@@ -64,7 +64,8 @@ default_zmax=4000
 default_lud_export=100  
 total_processors=$(nproc)
 
-read -p "Enter the number of processors to run Ludwig (default is 1): " user_input
+echo "Enter the number of processors to run Ludwig (default is 1):" 
+read user_input
 num_processors=$(validate_number "$user_input" 1 "Number of processors")
 echo ""
 echo "Number of processors to run Ludwig: $num_processors"
@@ -75,7 +76,8 @@ if (( num_processors > total_processors )); then
 fi
 
 # Ask the user if they wish to move results to an external disk
-read -p "Do you wish to move results to an external disk? (y/n): " move_results
+echo "Do you wish to move results to an external disk? (y/n): " 
+read move_results
 
 if [[ "$move_results" == "y" ]]; then
     # Check which disks are mounted and their mount points
