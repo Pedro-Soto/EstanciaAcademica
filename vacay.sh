@@ -46,7 +46,7 @@ start=$(validate_number "$input_start" "0" "start")
 echo "Terminando en: "
 read input_end
 end=$(validate_number "$input_end" "0" "end")
-if [[ "$end" -le "$start" ]]; then
+if [[ "$end" -lt "$start" ]]; then
     echo "Error: End value must be greater than start value"
     exit 1
 fi
@@ -84,14 +84,16 @@ if [[ "$move_results" == "y" ]]; then
     read -e -p "Please enter the destination directory (e.g., /media/username/disk_name): " dest_dir
 
     # Create Ludwig_Results directory in the specified destination
-    mkdir -p "$dest_dir/Ludwig_Results"
+    move_dir=$dest_dir/Ludwig_Results
+    mkdir -p "$move_dir"
     echo "Directory Ludwig_Results created at $dest_dir"
 else
     dest_dir="."  # Default to current directory if not moving results
-    mkdir -p "$dest_dir/Ludwig_Results"
+    move_dir=$dest_dir/Ludwig_Results
+    mkdir -p "$move_dir"
 fi
 
-move_dir = $dest_dir/Ludwig_Results
+
 
 
 # Prompt user for confirmation on default force value
@@ -247,6 +249,8 @@ do
             done
         fi
     done
-	echo "///////////////////////////////////// \n Moving Tam_Prom_$i to external drive"
+	eecho "/////////////////////////////////////"
+    echo "Moving Tam_Prom_$i to $move_dir"
+    echo "/////////////////////////////////////"
 	mv ~/Escritorio/Resultados/Tam_Prom_$i $move_dir		
 done
