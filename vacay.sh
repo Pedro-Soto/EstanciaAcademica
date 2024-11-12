@@ -75,9 +75,12 @@ if [[ "$move_results" == "y" ]]; then
 
     if [[ -z "$mounted_disks" ]]; then
         echo "No disks are currently mounted."
+        echo ""
     else
         echo "Mounted disks and their mount points:"
+        echo ""
         echo "$mounted_disks"
+        echo ""
     fi
 
     # Prompt user for the destination directory with tab completion
@@ -87,8 +90,13 @@ if [[ "$move_results" == "y" ]]; then
     move_dir=$dest_dir/Ludwig_Results
     mkdir -p "$move_dir"
     echo "Directory Ludwig_Results created at $dest_dir"
+    echo ""
 else
+    
     dest_dir="."  # Default to current directory if not moving results
+    echo "Using the default destination directory"
+    echo ""
+    echo "Directory Ludwig_Results created at $dest_dir"
     move_dir=$dest_dir/Ludwig_Results
     mkdir -p "$move_dir"
 fi
@@ -100,6 +108,8 @@ fi
 echo "Default force is set to $default_force. Press Enter to accept, or enter a new value:"
 read force
 force=$(validate_number "$input_force" "$default_force" "force")
+
+echo ""
 
 # Prompt user for confirmation on default zmax value
 echo "Default zmax is set to $default_zmax. Press Enter to accept, or enter a new value:"
@@ -113,7 +123,10 @@ if (($zmax % $num_processors > 0)); then
     add=$((num_processors-remainder))
     zmax=$((zmax+add))
     echo "Updated zmax value: $zmax"
+    echo ""
 fi
+
+echo ""
 
 # Calculate block size and other parameters
 block=$((zmax/2))
@@ -124,12 +137,14 @@ x2=$((zmax-block/zmax))
 echo "Default lud_export is set to $default_lud_export. Press Enter to accept, or enter a new value:"
 read lud_export
 lud_export=$(validate_number "$input_lud_export" "$default_lud_export" "lud_export")
+echo ""
 
 # Declare constants    
 declare step_elongueur=8
 declare mu1=1
 declare arbit=4
 pi=$(echo "scale=10; 4*a(1)" | bc -l)
+echo ""
 
 # Calculate amp_max
 amp_max=$(echo "($zmax / 8 * $pi + 0.999999)" | bc)  # Add a small value to round up
@@ -150,12 +165,17 @@ do
         declare ymax=$((i + (2 * j) + arbit))
         if (($ymax % $num_processors > 0)); then
             echo "ymax value is not multiple of $num_processors, and will be made so"
+            echo ""
             remainder=$(($ymax % $num_processors))
             echo "Remainder is $remainder"
+            echo ""
             add=$((num_processors-remainder))
             echo "Adding $add"
+            echo ""
             ymax=$(($ymax + $add))
         fi
+        
+        echo ""
         echo "Updated ymax value: $ymax"
 
         # Only proceed if the condition is met
@@ -178,7 +198,7 @@ do
                 declare data_div=$(echo "scale=2; $t / $lud_export" | bc)
                 declare freq_data=$(printf "%.0f" "$data_div") # Frequency data for output
                 echo "Data output every $freq_data steps"
-
+                echo ""
                 # Set up directory structure for results
                 dir=Tam_Prom_$i/Amp_$j/Visc_$k
                 full_dir="$base_dir/$dir"
@@ -197,6 +217,7 @@ do
                 # Modify files with calculated parameters
 
 					#Modify capillary.c
+                echo ""
 				echo "Updating capillary.c"
                 sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/capillary.c
                 sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/capillary.c
@@ -204,16 +225,19 @@ do
                 sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/capillary.c
 
 					#Modify vtk_Interface.c
-				echo "Updating vtk_Interface.c"
+				echo ""
+                echo "Updating vtk_Interface.c"
                 sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/vtk_Interface.c
                 sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/vtk_Interface.c
 
 					#Modify Drop_position.c
-				echo "Updating Drop_position.c"
+				echo ""
+                echo "Updating Drop_position.c"
 				sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/Drop_position.c
                 sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/Drop_position.c
 
 					#Modify input
+                echo ""
                 echo "Updating input"
                 
 				sed -i "s/size 3_EPAISSEUR_LONGUEUR/size 3_${ymax}_${zmax}/g" $base_dir/$dir/input
@@ -229,10 +253,12 @@ do
                 # Compile capillary.c
                 gcc capillary.c -o capillary.exe -lm
 
+                echo ""
                 # Run capillary
                 ./capillary.exe
 
-				# Run Ludwig
+				echo ""
+                # Run Ludwig
 				#chmod +x ./Ludwig.exe
                 #ulimit -s unlimited
 				#mpirun -np $num_processors ./Ludwig.exe input
@@ -249,8 +275,14 @@ do
             done
         fi
     done
-	eecho "/////////////////////////////////////"
+	echo "/////////////////////////////////////"
+    echo ""
     echo "Moving Tam_Prom_$i to $move_dir"
+    echo ""
     echo "/////////////////////////////////////"
-	mv ~/Escritorio/Resultados/Tam_Prom_$i $move_dir		
+	# Use rsync to move the directory with a progress bar
+    rsync -a --remove-source-files --info=progress2 ~/Escritorio/Resultados/Tam_Prom_$i "$move_dir"
+    
+    # After rsync, remove the empty source directory if needed
+    rmdir ~/Escritorio/Resultados/Tam_Prom_$i 2>/dev/null	
 done
