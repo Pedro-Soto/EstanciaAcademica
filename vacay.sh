@@ -35,6 +35,8 @@ else
     base_dir=$current_dir
 fi
 
+echo ""
+
 # Display title (in Spanish)
 echo "Tamaño promedio de canal"
 
@@ -43,6 +45,8 @@ echo "Iniciando en "
 read input_start
 start=$(validate_number "$input_start" "0" "start")
 
+echo ""
+
 echo "Terminando en: "
 read input_end
 end=$(validate_number "$input_end" "0" "end")
@@ -50,6 +54,7 @@ if [[ "$end" -lt "$start" ]]; then
     echo "Error: End value must be greater than start value"
     exit 1
 fi
+echo ""
 
 # Set default values
 default_force=0.00002
