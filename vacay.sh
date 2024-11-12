@@ -55,6 +55,15 @@ fi
 default_force=0.00002
 default_zmax=4000
 default_lud_export=100  
+total_processors=$(nproc)
+
+read -p "Enter the number of processors to run Ludwig (default is 1): " user_input
+num_processors=$(validate_number "$user_input" 1 "Number of processors")
+ 
+if (( num_processors > total_processors )); then
+    echo "Error: Number of processors cannot exceed the total number of processors on the system"
+    exit 1
+fi
 
 # Prompt user for confirmation on default force value
 echo "Default force is set to $default_force. Press Enter to accept, or enter a new value:"
@@ -66,12 +75,12 @@ echo "Default zmax is set to $default_zmax. Press Enter to accept, or enter a ne
 read zmax
 zmax=$(validate_number "$input_zmax" "$default_zmax" "zmax")
 
-# Check if zmax is a multiple of 8 and adjust if necessary
-if (($zmax % 8 > 0)); then
-    echo "This value is not multiple of 8, and will be made so"
-    remainder=$(($zmax % 8))
-    add=$((8-remainder))
-    zmax=$zmax+$add
+# Check if zmax is a multiple of number of processors and adjust if necessary
+if (($zmax % $num_processors > 0)); then
+    echo "This value is not multiple of $num_processors, and will be made so"
+    remainder=$(($zmax % $num_processors));
+    add=$((num_processors-remainder))
+    zmax=$((zmax+add))
     echo "Updated zmax value: $zmax"
 fi
 
@@ -106,13 +115,13 @@ do
             continue
         fi
 
-        # Calculate ymax and ensure it's a multiple of 8
+        # Calculate ymax and ensure it's a multiple of num processors
         declare ymax=$((i + (2 * j) + arbit))
-        if (($ymax % 8 > 0)); then
-            echo "ymax value is not multiple of 8, and will be made so"
-            remainder=$(($ymax % 8))
+        if (($ymax % $num_processors > 0)); then
+            echo "ymax value is not multiple of $num_processors, and will be made so"
+            remainder=$(($ymax % $num_processors))
             echo "Remainder is $remainder"
-            add=$((8-remainder))
+            add=$((num_processors-remainder))
             echo "Adding $add"
             ymax=$(($ymax + $add))
         fi
@@ -150,39 +159,41 @@ do
                 fi
 
                 # Create the directory if it does not exist
-                mkdir -p ~/Escritorio/Resultados/$dir
-                cd ~/Escritorio/Resultados/$dir/
-                cp -R ~/Escritorio/Resultados/Files/* ~/Escritorio/Resultados/$dir
+                mkdir -p $base_dir/$dir
+                cd $base_dir/$dir/
+                cp -R $base_dir/Files/* $base_dir/$dir
 
                 # Modify files with calculated parameters
 
 					#Modify capillary.c
 				echo "Updating capillary.c"
-                sed -i "s/EPAISSEUR/$ymax/g" ~/Escritorio/Resultados/$dir/capillary.c
-                sed -i "s/LONGUEUR/$zmax/g" ~/Escritorio/Resultados/$dir/capillary.c
-                sed -i "s/double a = J;/double a = $j;/g" ~/Escritorio/Resultados/$dir/capillary.c
-                sed -i "s/double b = I;/double b = $i;/g" ~/Escritorio/Resultados/$dir/capillary.c
+                sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/capillary.c
+                sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/capillary.c
+                sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/capillary.c
+                sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/capillary.c
 
 					#Modify vtk_Interface.c
 				echo "Updating vtk_Interface.c"
-                sed -i "s/double a = J;/double a = $j;/g" ~/Escritorio/Resultados/$dir/vtk_Interface.c
-                sed -i "s/double b = I;/double b = $i;/g" ~/Escritorio/Resultados/$dir/vtk_Interface.c
+                sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/vtk_Interface.c
+                sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/vtk_Interface.c
 
 					#Modify Drop_position.c
 				echo "Updating Drop_position.c"
-				sed -i "s/EPAISSEUR/$ymax/g" ~/Escritorio/Resultados/$dir/Drop_position.c
-                sed -i "s/LONGUEUR/$zmax/g" ~/Escritorio/Resultados/$dir/Drop_position.c
+				sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/Drop_position.c
+                sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/Drop_position.c
 
 					#Modify input
                 echo "Updating input"
-				sed -i "s/size 3_EPAISSEUR_LONGUEUR/size 3_${ymax}_${zmax}/g" ~/Escritorio/Resultados/$dir/input
-                sed -i "s/freq_phi FREQPHI/freq_phi $freq_data/g" ~/Escritorio/Resultados/$dir/input
-                sed -i "s/freq_vel FREQVEL/freq_vel $freq_data/g" ~/Escritorio/Resultados/$dir/input
-                sed -i "s/block_dimension    BLOCK/block_dimension    $block/g" ~/Escritorio/Resultados/$dir/input
-                sed -i "s/fP_amplitude 0.00_0.00_FORCE/fP_amplitude 0.00_0.00_$force/g" ~/Escritorio/Resultados/$dir/input
-                sed -i "s/VISC1/$mu1/g" ~/Escritorio/Resultados/$dir/input
-                sed -i "s/VISC2/1e-$k/g" ~/Escritorio/Resultados/$dir/input
-                sed -i "s/N_cycles CYCLES/N_cycles $t/g" ~/Escritorio/Resultados/$dir/input 
+                
+				sed -i "s/size 3_EPAISSEUR_LONGUEUR/size 3_${ymax}_${zmax}/g" $base_dir/$dir/input
+                sed -i "s/grid 1_1_PROCESSOR/grid 1_1_$num_processors/g" $base_dir/$dir/input
+                sed -i "s/freq_phi FREQPHI/freq_phi $freq_data/g" $base_dir/$dir/input
+                sed -i "s/freq_vel FREQVEL/freq_vel $freq_data/g" $base_dir/$dir/input
+                sed -i "s/block_dimension    BLOCK/block_dimension    $block/g" $base_dir/$dir/input
+                sed -i "s/fP_amplitude 0.00_0.00_FORCE/fP_amplitude 0.00_0.00_$force/g" $base_dir/$dir/input
+                sed -i "s/VISC1/$mu1/g" $base_dir/$dir/input
+                sed -i "s/VISC2/1e-$k/g" $base_dir/$dir/input
+                sed -i "s/N_cycles CYCLES/N_cycles $t/g" $base_dir/$dir/input 
 
                 # Compile capillary.c
                 gcc capillary.c -o capillary.exe -lm
@@ -191,8 +202,9 @@ do
                 ./capillary.exe
 
 				# Run Ludwig
-				#ulimit -s unlimited
-				#mpirun -np 8 ./Ludwig.exe input
+				chmod +x ./Ludwig.exe
+                ulimit -s unlimited
+				mpirun -np $num_processors ./Ludwig.exe input
                 
 				
 				end_time=$(date +%s%N)
@@ -202,7 +214,7 @@ do
                 echo "Execution time: $execution_time seconds"
 
                 # Move back to the base directory
-                cd ~/Escritorio/Resultados/
+                cd $base_dir/
             done
         fi
     done
