@@ -140,7 +140,7 @@ fi
 echo ""
 
 # Calculate block size and other parameters
-block=$((zmax/4))
+block=$((zmax/2))
 x1=$((block/zmax))
 x2=$((zmax-block/zmax))
 
