@@ -220,9 +220,7 @@ do
                 declare t=$(printf "%d" $(echo "2*$zmax/$v" | bc))
                 declare data_div=$(echo "scale=2; $t / $lud_export" | bc)
                 declare freq_data=$(printf "%.0f" "$data_div") # Frequency data for output
-                
-                echo "Parameters saved in sim_config.txt"
-
+    
                 # Set up directory structure for results
                 dir=Tam_Prom_$i/Amp_$j/Visc_$k
                 full_dir="$base_dir/$dir"
@@ -234,9 +232,13 @@ do
                 fi
 
                 # Create the directory if it does not exist
-                mkdir -p $base_dir/$dir
-                cd $base_dir/$dir/
-                cp -R $base_dir/Files/* $base_dir/$dir
+                echo "Creating directory $full_dir"
+                
+                mkdir -p $full_dir
+                
+                echo "Copying files to $full_dir"
+                cd $full_dir
+                cp -R $base_dir/Files/* $full_dir
 
                 # Write sim_config file
                 {
