@@ -692,8 +692,8 @@ void write_data(FILE * fp_data, int n[3], double * data) {
 
 if (ic == 1) { 
           // Defines a  side wall function for each z value
-	        double wall_right = j_centre + (b / 2) + a * sin(2 * M_PI * kc / zmax);
-	        double wall_left = j_centre - (b / 2) + a * sin(-2 * M_PI * kc / zmax); 
+	        double wall_right = j_centre + (b / 2) + a * cos(2 * M_PI * kc / zmax);
+	        double wall_left = j_centre - (b / 2)  - a * cos(2 * M_PI * kc / zmax); 
           if (jc <= wall_left || jc >= wall_right){
             continue;
           } 

@@ -501,7 +501,7 @@ int main(int argc, char ** argv) {
 	  
 	  // Defines a  side wall function for each z value
 	  double wall_right = j_centre + (b / 2) + a * cos(2 * M_PI * k / zmax);
-	  double wall_left = j_centre - (b / 2) + a * cos(-2 * M_PI * k / zmax); 
+	  double wall_left = j_centre - (b / 2) - a * cos(2 * M_PI * k / zmax); 
 	  if (output_type == STATUS_WITH_H) { map_h[n] = 0.0; }
           if (output_type == STATUS_WITH_C_H) { map_h[n] = 0.0; map_c[n] = 0.0; }
 	  if (j <= wall_left || j >= wall_right) {
