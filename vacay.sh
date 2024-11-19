@@ -135,6 +135,7 @@ else
     echo "Using the default destination directory"
     echo ""
     echo "Directory Ludwig_Results created at $base_dir"
+    echo ""
     move_dir=$dest_dir/Ludwig_Results
     mkdir -p "$move_dir"
 fi
