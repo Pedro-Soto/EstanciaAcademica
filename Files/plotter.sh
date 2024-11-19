@@ -17,8 +17,7 @@ gnuplot -persist <<- EOF
     files = system("ls phi-*.vtk")
     do for [file in files] {
         print "Processing ".file
-        plot file using 2:(\$4 > 0 ? \$3 : NaN) title 'Positive Values' with points, \
-             file using 2:(\$4 <= 0 ? \$3 : NaN) title 'Negative or Zero Values' with points
+        plot "phi-00024000.vtk" u  3:( ( $4 >0 &&  $2> 72.0/2.0 - (32.0 / 2) - 10.0 * cos(2 * 3.14157 * $3 / 4008.0) && $2< 72.0/2.0 + (32.0 / 2) + 10.0 * cos(2 * 3.14157 * $3 / 4008  ) ) ? $2 : NaN)  ,  "phi-00024000.vtk" u 3: ( ( $4 <=0 &&  $2> 72.0/2.0 - (32.0 / 2) - 10.0 * cos(2 * 3.14157 * $3 / 4008.0) && $2< 72.0/2.0 + (32.0 / 2) + 10.0 * cos(2 * 3.14157 * $3 / 4008  ) ) ? $2 : NaN) , 72.0/2.0 + (32.0 / 2) + 10.0 * cos(2 * 3.14157 * x / 4008.0) lw 3, 72.0/2.0 - (32.0 / 2) - 10.0 * cos(2 * 3.14157 * x / 4008.0) lw 3
         pause 5  # Display each plot for 5 seconds
     }
 EOF
