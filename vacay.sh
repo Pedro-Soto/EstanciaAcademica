@@ -74,7 +74,7 @@ while [[ "$direction" != "s" && "$direction" != "e" ]]; do
 done
 
 echo ""
-fi
+
 if [[ "$end" -lt "$start" ]]; then
     echo "Error: End value must be greater than start value"
     exit 1
