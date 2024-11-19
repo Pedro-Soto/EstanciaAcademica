@@ -201,7 +201,7 @@ echo "Zmax: $zmax"
 echo "Results will be saved in: $move_dir"
 echo ""
 
-if [[ "$direction" == "s"]]; then
+if [[ "$direction" == "s" ]]; then
     for ((i=$start; i<=$end; i+=$step_elongueur))
         do
             # Inner loop for amplitude
