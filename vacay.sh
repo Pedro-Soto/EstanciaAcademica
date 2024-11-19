@@ -184,6 +184,9 @@ do
             continue
         fi
 
+        if (($j<10)); then
+            continue
+        fi
         # Calculate ymax and ensure it's a multiple of num processors
         declare ymax=$((i + (2 * j) + arbit))
         if (($ymax % $num_processors > 0)); then
