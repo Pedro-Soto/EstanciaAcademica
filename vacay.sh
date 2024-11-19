@@ -303,6 +303,12 @@ do
                 sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/Wall_Analysis.c
                 sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/Wall_Analysis.c
                 
+                    #Modify plotter.sh
+                sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/plotter.sh
+                sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/plotter.sh
+                sed -i "s/b=I/b=$i/g" $base_dir/$dir/plotter.sh
+                sed -i "s/a=J/a=$j/g" $base_dir/$dir/plotter.sh
+                
                 # Compile capillary.c
                 gcc capillary.c -o capillary.exe -lm
 
