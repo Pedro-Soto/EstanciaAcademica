@@ -22,6 +22,7 @@ gnuplot -persist <<- EOF
     set ylabel 'Y-axis'
     set grid
     set title 'Plot of phi-*.vtk files'
+    num_files = system("ls phi-*.vtk | wc -l")
 
     # Loop over each file and plot it in the same window
     files = system("ls phi-*.vtk")
@@ -34,7 +35,7 @@ gnuplot -persist <<- EOF
              max(0, min($j_centre - ($b / 2) - $a * cos(2 * $PI * x / $zmax), $zmax)) \
              title 'Wall Left' lc rgb "red" lw 3
     }
-    do for [i=1:101]{
+    do for [i=1:num_files]{
         pause 5
         replot
     }
