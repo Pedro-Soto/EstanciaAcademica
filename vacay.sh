@@ -295,6 +295,14 @@ do
                 sed -i "s/VISC2/1e-$k/g" $base_dir/$dir/input
                 sed -i "s/N_cycles CYCLES/N_cycles $t/g" $base_dir/$dir/input 
 
+                    #Modify Wall_Analysis.c
+                echo ""
+                echo "Updating Wall_Analysis.c"
+                sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/Wall_Analysis.c
+                sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/Wall_Analysis.c
+                sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/Wall_Analysis.c
+                sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/Wall_Analysis.c
+                
                 # Compile capillary.c
                 gcc capillary.c -o capillary.exe -lm
 
