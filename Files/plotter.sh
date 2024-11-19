@@ -17,7 +17,10 @@ gnuplot -persist <<- EOF
     files = system("ls phi-*.vtk")
     do for [file in files] {
         print "Processing ".file
-        plot file u  3:( ( $4 > 0) ? $2 : NaN), file u 3: ( ( $4 <=0) ? $2 : NaN) 
-        pause 5  # Display each plot for 5 seconds
+        plot file u 3:((\$4>0)?\$2:NaN), file u 3:((\$4<0)?\$2:NaN)
+        }
+    do for [i=1:*]{
+    pause 5
+    replot
     }
 EOF
