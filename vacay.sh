@@ -552,4 +552,5 @@ else
             # After rsync, remove the empty source directory if needed
             find $base_dir/Tam_Prom_$i -type d -empty -delete
         done
+fi
 
