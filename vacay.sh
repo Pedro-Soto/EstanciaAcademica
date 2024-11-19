@@ -46,7 +46,7 @@ echo "Tamaño promedio de canal"
 echo "Iniciando en "
 read input_start
 start=$(validate_number "$input_start" "0" "start")
-if ((start % 8 != 0 )): then
+if ((start % 8 != 0 )); then
     echo "start is not multiple of 8, and will be rounded to the nearest upper multiple"
     start=$((start + (8 - (start % 8))))
     echo "Adjusted start value to the nearest upper multiple of 8: $start"
@@ -56,7 +56,7 @@ echo ""
 echo "Terminando en: "
 read input_end
 end=$(validate_number "$input_end" "0" "end")
-if ((end % 8 != 0 )): then
+if ((end % 8 != 0 )); then
     echo "end is not multiple of 8, and will be rounded to the nearest upper multiple"
     end=$((end + (8 - (end % 8))))
     echo "Adjusted end value to the nearest upper multiple of 8: $end"
