@@ -694,10 +694,7 @@ if (ic == 1) {
           // Defines a  side wall function for each z value
 	        double wall_right = j_centre + (b / 2) + a * cos(2 * M_PI * kc / zmax);
 	        double wall_left = j_centre - (b / 2)  - a * cos(2 * M_PI * kc / zmax); 
-          if (jc <= wall_left || jc >= wall_right){
-            continue;
-          } 
-          else{
+          
           if (output_index_) {
             /* Add the global (i,j,k) index starting at 1 each way */
             fprintf(fp_data, "%4d %4d %4d ", 1 + ic,jc,kc);
@@ -708,7 +705,7 @@ if (ic == 1) {
             index++;
           }
           fprintf(fp_data, "%13.6e\n", *(data + index));
-          }
+          
 }
 
           index++;
