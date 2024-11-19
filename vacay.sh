@@ -62,6 +62,18 @@ if ((end % 8 != 0 )): then
     echo "Adjusted end value to the nearest upper multiple of 8: $end"
 fi
 echo ""
+
+# Ask user for the direction of the simulation
+echo "Do you want the simulations to go from start to end or from end to start? (Enter 's' for start to end or 'e' for end to start): "
+read direction
+
+# Validate user input
+while [[ "$direction" != "s" && "$direction" != "e" ]]; do
+    echo "Invalid input. Please enter 's' for start to end or 'e' for end to start:"
+    read direction
+done
+
+echo ""
 fi
 if [[ "$end" -lt "$start" ]]; then
     echo "Error: End value must be greater than start value"
@@ -89,6 +101,10 @@ fi
 # Ask the user if they wish to move results to an external disk
 echo "Do you wish to move results to an external disk? (y/n): " 
 read move_results
+while (( "$move_results"!= "y" && "$move_results"!= "n")); do
+    echo "Invalid input. Please enter y or n."
+    read move_results
+done
 
 if [[ "$move_results" == "y" ]]; then
     # Check which disks are mounted and their mount points
@@ -185,177 +201,355 @@ echo "Zmax: $zmax"
 echo "Results will be saved in: $move_dir"
 echo ""
 
-for ((i=$start; i<=$end; i+=$step_elongueur))
-do
-    # Inner loop for amplitude
-    for (( j=1; j<=amp_max; j+=1))
-    do
-        # Skip iterations where i <= 2*j+10
-        if (($i <= $((2 * j + 10)))); then
-            continue
-        fi
-
-        if (($j<10)); then
-            continue
-        fi
-        # Calculate ymax and ensure it's a multiple of num processors
-        declare ymax=$((i + (2 * j) + arbit))
-        if (($ymax % $num_processors > 0)); then
-            echo "ymax value is not multiple of $num_processors, and will be made so"
-            echo ""
-            remainder=$(($ymax % $num_processors))
-            echo "Remainder is $remainder"
-            echo ""
-            add=$((num_processors-remainder))
-            echo "Adding $add"
-            echo ""
-            ymax=$(($ymax + $add))
-        fi
-        
-        echo ""
-        echo "Updated ymax value: $ymax"
-
-        # Only proceed if the condition is met
-        if [ $(($i-2*$j)) -gt 10 ]; then
-            
-            # Loop over viscosity values
-            for (( k=0; k<=3; k+=1))
+if [[ "$direction" == "s"]]; then
+    for ((i=$start; i<=$end; i+=$step_elongueur))
+        do
+            # Inner loop for amplitude
+            for (( j=1; j<=amp_max; j+=1))
             do
-                start_time=$(date +%s%N) # Record start time
-
-                # Calculate viscosity and other parameters
-                declare mu2=$(echo "10^-$k" | bc)
-                declare i2=$((i*i))
-                declare xeta1=$mu1*0.5
-                declare xeta2=$mu2*0.5
-                declare sum_xeta=$(echo "$xeta1+$xeta2" | bc)
-                declare K=$(echo "$i2/$sum_xeta" | bc)
-                declare v=$(echo "$K*$force" | bc)
-                declare t=$(printf "%d" $(echo "2*$zmax/$v" | bc))
-                declare data_div=$(echo "scale=2; $t / $lud_export" | bc)
-                declare freq_data=$(printf "%.0f" "$data_div") # Frequency data for output
-    
-                # Set up directory structure for results
-                dir=Tam_Prom_$i/Amp_$j/Visc_$k
-                full_dir="$base_dir/$dir"
-
-                # Check if the directory exists and skip if it does
-                if [ -d "$full_dir" ]; then
-                    echo "Directory $full_dir already exists, skipping..."
+                # Skip iterations where i <= 2*j+10
+                if (($i <= $((2 * j + 10)))); then
                     continue
                 fi
 
-                # Create the directory if it does not exist
-                echo "Creating directory $full_dir"
+                if (($j<10)); then
+                    continue
+                fi
+                # Calculate ymax and ensure it's a multiple of num processors
+                declare ymax=$((i + (2 * j) + arbit))
+                if (($ymax % $num_processors > 0)); then
+                    echo "ymax value is not multiple of $num_processors, and will be made so"
+                    echo ""
+                    remainder=$(($ymax % $num_processors))
+                    echo "Remainder is $remainder"
+                    echo ""
+                    add=$((num_processors-remainder))
+                    echo "Adding $add"
+                    echo ""
+                    ymax=$(($ymax + $add))
+                fi
                 
-                mkdir -p $full_dir
-                
-                echo "Copying files to $full_dir"
-                cd $full_dir
-                cp -R $base_dir/Files/* $full_dir
-
-                # Write sim_config file
-                {
-                echo "Final configuration:"
-                echo "Number of processors: $num_processors"
-                echo "Force: $force"
-                echo "Xmax = 3"
-                echo "Zmax: $zmax"
-                echo "Ymax: $ymax"
-                echo "Width : $i"
-                echo "Length : $zmax"
-                echo "amplitude : $j"
-                echo "viscosity : $mu2"
-                echo "force : $force"
-                echo "block size : $block"
-                echo "data frequency : $freq_data"
-                echo "total cycles : $t"
-                echo "Results will be saved in: $move_dir"
-                } > sim_config.txt
-
-                # Modify files with calculated parameters
-
-					#Modify capillary.c
                 echo ""
-				echo "Updating capillary.c"
-                sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/capillary.c
-                sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/capillary.c
-                sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/capillary.c
-                sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/capillary.c
+                echo "Updated ymax value: $ymax"
 
-					#Modify vtk_Interface.c
-				echo ""
-                echo "Updating vtk_Interface.c"
-                sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/vtk_Interface.c
-                sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/vtk_Interface.c
+                # Only proceed if the condition is met
+                if [ $(($i-2*$j)) -gt 10 ]; then
+                    
+                    # Loop over viscosity values
+                    for (( k=0; k<=3; k+=1))
+                    do
+                        start_time=$(date +%s%N) # Record start time
 
-					#Modify Drop_position.c
-				echo ""
-                echo "Updating Drop_position.c"
-				sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/Drop_position.c
-                sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/Drop_position.c
+                        # Calculate viscosity and other parameters
+                        declare mu2=$(echo "10^-$k" | bc)
+                        declare i2=$((i*i))
+                        declare xeta1=$mu1*0.5
+                        declare xeta2=$mu2*0.5
+                        declare sum_xeta=$(echo "$xeta1+$xeta2" | bc)
+                        declare K=$(echo "$i2/$sum_xeta" | bc)
+                        declare v=$(echo "$K*$force" | bc)
+                        declare t=$(printf "%d" $(echo "2*$zmax/$v" | bc))
+                        declare data_div=$(echo "scale=2; $t / $lud_export" | bc)
+                        declare freq_data=$(printf "%.0f" "$data_div") # Frequency data for output
+            
+                        # Set up directory structure for results
+                        dir=Tam_Prom_$i/Amp_$j/Visc_$k
+                        full_dir="$base_dir/$dir"
 
-					#Modify input
-                echo ""
-                echo "Updating input"
-                
-				sed -i "s/size 3_EPAISSEUR_LONGUEUR/size 3_${ymax}_${zmax}/g" $base_dir/$dir/input
-                sed -i "s/grid 1_1_PROCESSOR/grid 1_1_$num_processors/g" $base_dir/$dir/input
-                sed -i "s/freq_phi FREQPHI/freq_phi $freq_data/g" $base_dir/$dir/input
-                sed -i "s/freq_vel FREQVEL/freq_vel $freq_data/g" $base_dir/$dir/input
-                sed -i "s/block_dimension    BLOCK/block_dimension    $block/g" $base_dir/$dir/input
-                sed -i "s/fP_amplitude 0.00_0.00_FORCE/fP_amplitude 0.00_0.00_$force/g" $base_dir/$dir/input
-                sed -i "s/VISC1/$mu1/g" $base_dir/$dir/input
-                sed -i "s/VISC2/1e-$k/g" $base_dir/$dir/input
-                sed -i "s/N_cycles CYCLES/N_cycles $t/g" $base_dir/$dir/input 
+                        # Check if the directory exists and skip if it does
+                        if [ -d "$full_dir" ]; then
+                            echo "Directory $full_dir already exists, skipping..."
+                            continue
+                        fi
 
-                    #Modify Wall_Analysis.c
-                echo ""
-                echo "Updating Wall_Analysis.c"
-                sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/Wall_Analysis.c
-                sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/Wall_Analysis.c
-                sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/Wall_Analysis.c
-                sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/Wall_Analysis.c
-                
-                    #Modify plotter.sh
-                sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/plotter.sh
-                sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/plotter.sh
-                sed -i "s/b=I/b=$i/g" $base_dir/$dir/plotter.sh
-                sed -i "s/a=J/a=$j/g" $base_dir/$dir/plotter.sh
-                
-                # Compile capillary.c
-                gcc capillary.c -o capillary.exe -lm
+                        # Create the directory if it does not exist
+                        echo "Creating directory $full_dir"
+                        
+                        mkdir -p $full_dir
+                        
+                        echo "Copying files to $full_dir"
+                        cd $full_dir
+                        cp -R $base_dir/Files/* $full_dir
 
-                echo ""
-                # Run capillary
-                ./capillary.exe
+                        # Write sim_config file
+                        {
+                        echo "Final configuration:"
+                        echo "Number of processors: $num_processors"
+                        echo "Force: $force"
+                        echo "Xmax = 3"
+                        echo "Zmax: $zmax"
+                        echo "Ymax: $ymax"
+                        echo "Width : $i"
+                        echo "Length : $zmax"
+                        echo "amplitude : $j"
+                        echo "viscosity : $mu2"
+                        echo "force : $force"
+                        echo "block size : $block"
+                        echo "data frequency : $freq_data"
+                        echo "total cycles : $t"
+                        echo "Results will be saved in: $move_dir"
+                        } > sim_config.txt
 
-				echo ""
-                # Run Ludwig
-				#chmod +x ./Ludwig.exe
-                #ulimit -s unlimited
-				#mpirun -np $num_processors ./Ludwig.exe input
-                
-				
-				end_time=$(date +%s%N)
+                        # Modify files with calculated parameters
 
-                # Calculate and display execution time
-                execution_time=$(echo "scale=2; ($end_time - $start_time) / 1e9" | bc)
-                echo "Execution time: $execution_time seconds"
+                            #Modify capillary.c
+                        echo ""
+                        echo "Updating capillary.c"
+                        sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/capillary.c
+                        sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/capillary.c
+                        sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/capillary.c
+                        sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/capillary.c
 
-                # Move back to the base directory
-                cd $base_dir/
+                            #Modify vtk_Interface.c
+                        echo ""
+                        echo "Updating vtk_Interface.c"
+                        sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/vtk_Interface.c
+                        sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/vtk_Interface.c
+
+                            #Modify Drop_position.c
+                        echo ""
+                        echo "Updating Drop_position.c"
+                        sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/Drop_position.c
+                        sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/Drop_position.c
+
+                            #Modify input
+                        echo ""
+                        echo "Updating input"
+                        
+                        sed -i "s/size 3_EPAISSEUR_LONGUEUR/size 3_${ymax}_${zmax}/g" $base_dir/$dir/input
+                        sed -i "s/grid 1_1_PROCESSOR/grid 1_1_$num_processors/g" $base_dir/$dir/input
+                        sed -i "s/freq_phi FREQPHI/freq_phi $freq_data/g" $base_dir/$dir/input
+                        sed -i "s/freq_vel FREQVEL/freq_vel $freq_data/g" $base_dir/$dir/input
+                        sed -i "s/block_dimension    BLOCK/block_dimension    $block/g" $base_dir/$dir/input
+                        sed -i "s/fP_amplitude 0.00_0.00_FORCE/fP_amplitude 0.00_0.00_$force/g" $base_dir/$dir/input
+                        sed -i "s/VISC1/$mu1/g" $base_dir/$dir/input
+                        sed -i "s/VISC2/1e-$k/g" $base_dir/$dir/input
+                        sed -i "s/N_cycles CYCLES/N_cycles $t/g" $base_dir/$dir/input 
+
+                            #Modify Wall_Analysis.c
+                        echo ""
+                        echo "Updating Wall_Analysis.c"
+                        sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/Wall_Analysis.c
+                        sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/Wall_Analysis.c
+                        sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/Wall_Analysis.c
+                        sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/Wall_Analysis.c
+                        
+                            #Modify plotter.sh
+                        sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/plotter.sh
+                        sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/plotter.sh
+                        sed -i "s/b=I/b=$i/g" $base_dir/$dir/plotter.sh
+                        sed -i "s/a=J/a=$j/g" $base_dir/$dir/plotter.sh
+                        
+                        # Compile capillary.c
+                        gcc capillary.c -o capillary.exe -lm
+
+                        echo ""
+                        # Run capillary
+                        ./capillary.exe
+
+                        echo ""
+                        # Run Ludwig
+                        #chmod +x ./Ludwig.exe
+                        #ulimit -s unlimited
+                        #mpirun -np $num_processors ./Ludwig.exe input
+                        
+                        
+                        end_time=$(date +%s%N)
+
+                        # Calculate and display execution time
+                        execution_time=$(echo "scale=2; ($end_time - $start_time) / 1e9" | bc)
+                        echo "Execution time: $execution_time seconds"
+
+                        # Move back to the base directory
+                        cd $base_dir/
+                    done
+                fi
             done
-        fi
-    done
-	echo "/////////////////////////////////////"
-    echo ""
-    echo "Moving Tam_Prom_$i to $move_dir"
-    echo ""
-    echo "/////////////////////////////////////"
-	# Use rsync to move the directory with a progress bar
-    rsync -a --remove-source-files --info=progress2 $base_dir/Tam_Prom_$i "$move_dir"
-    
-    # After rsync, remove the empty source directory if needed
-    find $base_dir/Tam_Prom_$i -type d -empty -delete
-done
+            echo "/////////////////////////////////////"
+            echo ""
+            echo "Moving Tam_Prom_$i to $move_dir"
+            echo ""
+            echo "/////////////////////////////////////"
+            # Use rsync to move the directory with a progress bar
+            rsync -a --remove-source-files --info=progress2 $base_dir/Tam_Prom_$i "$move_dir"
+            
+            # After rsync, remove the empty source directory if needed
+            find $base_dir/Tam_Prom_$i -type d -empty -delete
+        done
+else
+    for ((i=end; i>=start; i-=step_elongueur))
+        do
+            # Inner loop for amplitude
+            for (( j=amp_max; j>=1; j-=1))
+            do
+                # Skip iterations where i <= 2*j+10
+                if (($i <= $((2 * j + 10)))); then
+                    continue
+                fi
+
+                if (($j<10)); then
+                    continue
+                fi
+                # Calculate ymax and ensure it's a multiple of num processors
+                declare ymax=$((i + (2 * j) + arbit))
+                if (($ymax % $num_processors > 0)); then
+                    echo "ymax value is not multiple of $num_processors, and will be made so"
+                    echo ""
+                    remainder=$(($ymax % $num_processors))
+                    echo "Remainder is $remainder"
+                    echo ""
+                    add=$((num_processors-remainder))
+                    echo "Adding $add"
+                    echo ""
+                    ymax=$(($ymax + $add))
+                fi
+                
+                echo ""
+                echo "Updated ymax value: $ymax"
+
+                # Only proceed if the condition is met
+                if [ $(($i-2*$j)) -gt 10 ]; then
+                    
+                    # Loop over viscosity values
+                    for (( k=0; k<=3; k+=1))
+                    do
+                        start_time=$(date +%s%N) # Record start time
+
+                        # Calculate viscosity and other parameters
+                        declare mu2=$(echo "10^-$k" | bc)
+                        declare i2=$((i*i))
+                        declare xeta1=$mu1*0.5
+                        declare xeta2=$mu2*0.5
+                        declare sum_xeta=$(echo "$xeta1+$xeta2" | bc)
+                        declare K=$(echo "$i2/$sum_xeta" | bc)
+                        declare v=$(echo "$K*$force" | bc)
+                        declare t=$(printf "%d" $(echo "2*$zmax/$v" | bc))
+                        declare data_div=$(echo "scale=2; $t / $lud_export" | bc)
+                        declare freq_data=$(printf "%.0f" "$data_div") # Frequency data for output
+            
+                        # Set up directory structure for results
+                        dir=Tam_Prom_$i/Amp_$j/Visc_$k
+                        full_dir="$base_dir/$dir"
+
+                        # Check if the directory exists and skip if it does
+                        if [ -d "$full_dir" ]; then
+                            echo "Directory $full_dir already exists, skipping..."
+                            continue
+                        fi
+
+                        # Create the directory if it does not exist
+                        echo "Creating directory $full_dir"
+                        
+                        mkdir -p $full_dir
+                        
+                        echo "Copying files to $full_dir"
+                        cd $full_dir
+                        cp -R $base_dir/Files/* $full_dir
+
+                        # Write sim_config file
+                        {
+                        echo "Final configuration:"
+                        echo "Number of processors: $num_processors"
+                        echo "Force: $force"
+                        echo "Xmax = 3"
+                        echo "Zmax: $zmax"
+                        echo "Ymax: $ymax"
+                        echo "Width : $i"
+                        echo "Length : $zmax"
+                        echo "amplitude : $j"
+                        echo "viscosity : $mu2"
+                        echo "force : $force"
+                        echo "block size : $block"
+                        echo "data frequency : $freq_data"
+                        echo "total cycles : $t"
+                        echo "Results will be saved in: $move_dir"
+                        } > sim_config.txt
+
+                        # Modify files with calculated parameters
+
+                            #Modify capillary.c
+                        echo ""
+                        echo "Updating capillary.c"
+                        sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/capillary.c
+                        sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/capillary.c
+                        sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/capillary.c
+                        sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/capillary.c
+
+                            #Modify vtk_Interface.c
+                        echo ""
+                        echo "Updating vtk_Interface.c"
+                        sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/vtk_Interface.c
+                        sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/vtk_Interface.c
+
+                            #Modify Drop_position.c
+                        echo ""
+                        echo "Updating Drop_position.c"
+                        sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/Drop_position.c
+                        sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/Drop_position.c
+
+                            #Modify input
+                        echo ""
+                        echo "Updating input"
+                        
+                        sed -i "s/size 3_EPAISSEUR_LONGUEUR/size 3_${ymax}_${zmax}/g" $base_dir/$dir/input
+                        sed -i "s/grid 1_1_PROCESSOR/grid 1_1_$num_processors/g" $base_dir/$dir/input
+                        sed -i "s/freq_phi FREQPHI/freq_phi $freq_data/g" $base_dir/$dir/input
+                        sed -i "s/freq_vel FREQVEL/freq_vel $freq_data/g" $base_dir/$dir/input
+                        sed -i "s/block_dimension    BLOCK/block_dimension    $block/g" $base_dir/$dir/input
+                        sed -i "s/fP_amplitude 0.00_0.00_FORCE/fP_amplitude 0.00_0.00_$force/g" $base_dir/$dir/input
+                        sed -i "s/VISC1/$mu1/g" $base_dir/$dir/input
+                        sed -i "s/VISC2/1e-$k/g" $base_dir/$dir/input
+                        sed -i "s/N_cycles CYCLES/N_cycles $t/g" $base_dir/$dir/input 
+
+                            #Modify Wall_Analysis.c
+                        echo ""
+                        echo "Updating Wall_Analysis.c"
+                        sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/Wall_Analysis.c
+                        sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/Wall_Analysis.c
+                        sed -i "s/double a = J;/double a = $j;/g" $base_dir/$dir/Wall_Analysis.c
+                        sed -i "s/double b = I;/double b = $i;/g" $base_dir/$dir/Wall_Analysis.c
+                        
+                            #Modify plotter.sh
+                        sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/plotter.sh
+                        sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/plotter.sh
+                        sed -i "s/b=I/b=$i/g" $base_dir/$dir/plotter.sh
+                        sed -i "s/a=J/a=$j/g" $base_dir/$dir/plotter.sh
+                        
+                        # Compile capillary.c
+                        gcc capillary.c -o capillary.exe -lm
+
+                        echo ""
+                        # Run capillary
+                        ./capillary.exe
+
+                        echo ""
+                        # Run Ludwig
+                        #chmod +x ./Ludwig.exe
+                        #ulimit -s unlimited
+                        #mpirun -np $num_processors ./Ludwig.exe input
+                        
+                        
+                        end_time=$(date +%s%N)
+
+                        # Calculate and display execution time
+                        execution_time=$(echo "scale=2; ($end_time - $start_time) / 1e9" | bc)
+                        echo "Execution time: $execution_time seconds"
+
+                        # Move back to the base directory
+                        cd $base_dir/
+                    done
+                fi
+            done
+            echo "/////////////////////////////////////"
+            echo ""
+            echo "Moving Tam_Prom_$i to $move_dir"
+            echo ""
+            echo "/////////////////////////////////////"
+            # Use rsync to move the directory with a progress bar
+            rsync -a --remove-source-files --info=progress2 $base_dir/Tam_Prom_$i "$move_dir"
+            
+            sleep 1
+            # After rsync, remove the empty source directory if needed
+            find $base_dir/Tam_Prom_$i -type d -empty -delete
+        done
+
