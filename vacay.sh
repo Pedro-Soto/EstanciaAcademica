@@ -540,6 +540,11 @@ else
                             sed -i "s/b=I/b=$i/g" $base_dir/$dir/plotter.sh
                             sed -i "s/a=J/a=$j/g" $base_dir/$dir/plotter.sh
                             
+                            #Modify 3dplotter.sh
+                            sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/3d_plotter.sh
+                            sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/3d_plotter.sh
+                            sed -i "s/b=I/b=$i/g" $base_dir/$dir/3d_plotter.sh
+                            sed -i "s/a=J/a=$j/g" $base_dir/$dir/3d_plotter.sh
                             # Compile capillary.c
                             gcc capillary.c -o capillary.exe -lm
 
