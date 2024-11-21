@@ -252,6 +252,8 @@ if [[ "$direction" == "s" ]]; then
                         declare t=$(printf "%d" $(echo "2*$zmax/$v" | bc))
                         declare data_div=$(echo "scale=2; $t / $lud_export" | bc)
                         declare freq_data=$(printf "%.0f" "$data_div") # Frequency data for output
+                        declare restart_step=0
+                        declare remaining_cycles=0
             
                         # Set up directory structure for results
                         dir=Tam_Prom_$i/Amp_$j/Visc_$k
@@ -259,14 +261,33 @@ if [[ "$direction" == "s" ]]; then
 
                         # Check if the directory exists and skip if it does
                         if [ -d "$full_dir" ]; then
-                            echo "Directory $full_dir already exists, skipping..."
-                            continue
+                            echo "Directory $full_dir already exists, checking for phi files..."
+
+                            # Check for phi files
+                            phi_files=("$full_dir"/phi-*.001-001)
+
+                            if [ -e "${phi_files[0]}" ]; then
+                                # Get the last phi file
+                                last_phi_file="${phi_files[-1]}"
+                                echo "Last phi file found: $last_phi_file"
+
+                                # Extract the number from the filename
+                                restart_step=$(basename "$last_phi_file" | sed 's/^phi-\([0-9]*\)\.001-001$/\1/')
+                                restart_step=$((10#$restart_step))
+                                echo "Extracted restart_step: $restart_step"
+                                echo "Total cycles: $t"
+                                remaining_cycles=$((t - restart_step))
+                                echo "Remaining cycles: $remaining_cycles from $t"
+                            else
+                                restart_step=0
+                                remaining_cycles=$((t))
+                                echo "No phi files found, setting restart_step to $restart_step"
+                            fi
+                        else
+                            echo "Creating directory $full_dir"
+                            mkdir -p $full_dir
                         fi
 
-                        # Create the directory if it does not exist
-                        echo "Creating directory $full_dir"
-                        
-                        mkdir -p $full_dir
                         
                         echo "Copying files to $full_dir"
                         cd $full_dir
@@ -288,6 +309,8 @@ if [[ "$direction" == "s" ]]; then
                         echo "block size : $block"
                         echo "data frequency : $freq_data"
                         echo "total cycles : $t"
+                        echo "Remaining cycles : $remaining_cycles"
+                        echo "Restart step : $restart_step"
                         echo "Results will be saved in: $move_dir"
                         } > sim_config.txt
 
@@ -317,6 +340,7 @@ if [[ "$direction" == "s" ]]; then
                         echo ""
                         echo "Updating input"
                         
+                        sed -i "s/N_start  CYCLE_START /N_start  $restart_step /g" $base_dir/$dir/input
                         sed -i "s/size 3_EPAISSEUR_LONGUEUR/size 3_${ymax}_${zmax}/g" $base_dir/$dir/input
                         sed -i "s/grid 1_1_PROCESSOR/grid 1_1_$num_processors/g" $base_dir/$dir/input
                         sed -i "s/freq_phi FREQPHI/freq_phi $freq_data/g" $base_dir/$dir/input
@@ -325,7 +349,7 @@ if [[ "$direction" == "s" ]]; then
                         sed -i "s/fP_amplitude 0.00_0.00_FORCE/fP_amplitude 0.00_0.00_$force/g" $base_dir/$dir/input
                         sed -i "s/VISC1/$mu1/g" $base_dir/$dir/input
                         sed -i "s/VISC2/1e-$k/g" $base_dir/$dir/input
-                        sed -i "s/N_cycles CYCLES/N_cycles $t/g" $base_dir/$dir/input 
+                        sed -i "s/N_cycles CYCLES/N_cycles $remaining_cycles/g" $base_dir/$dir/input 
 
                             #Modify Wall_Analysis.c
                         echo ""
