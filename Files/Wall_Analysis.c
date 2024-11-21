@@ -67,13 +67,19 @@ int main() {
                 continue;
             }
 
+            //Define counters
+            int line_discard = 0;
+            int unparsed = 0;
+
             // Read and process the contents of the .vtk file
             char line[256];
             while (fgets(line, sizeof(line), file)) {
                 int x, y, z;
                 float phi;
+                
                 // Parse the line into variables
                 if (sscanf(line, "%d %d %d %f", &x, &y, &z, &phi) == 4) {
+
                     // Calculate the bounds
                     double wall_right = j_centre + (b / 2) + a * cos(2 * M_PI * z / zmax);
                     double wall_left = j_centre - (b / 2) - a * cos(2 * M_PI * z / zmax); 
@@ -86,13 +92,17 @@ int main() {
                         fprintf(mapFile, "%d %d %d %f\n", x, y, z, phi); // Write valid data to map file
                         fprintf(mapFile, "\n"); // Add an empty line after each entry
                     } else {
-                        printf("Line discarded: %s", line);
+                        line_discard += 1;
+                        printf("Lines discarded: %d", line_discard);
                     }
                 } else {
-                    printf("Failed to parse line: %s", line);
+                    unparsed += 1;
                 }
             }
+            // Write number of unparseable lines
+            printf("Failed to parse %d lines", unparsed);
 
+            // Close all files
             fclose(file);
             fclose(tempFile);
             fclose(mapFile);
