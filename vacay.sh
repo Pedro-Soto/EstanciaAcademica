@@ -247,7 +247,7 @@ if [[ "$direction" == "s" ]]; then
                         declare xeta1=$mu1*0.5
                         declare xeta2=$mu2*0.5
                         declare sum_xeta=$(echo "$xeta1+$xeta2" | bc)
-                        declare K=$(echo "$i2/$sum_xeta" | bc)
+                        declare K=$(echo "$i2/$(12*$sum_xeta)" | bc)
                         declare v=$(echo "$K*$force" | bc)
                         declare t=$(printf "%d" $(echo "2*$zmax/$v" | bc))
                         declare data_div=$(echo "scale=2; $t / $lud_export" | bc)
