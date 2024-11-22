@@ -35,7 +35,11 @@ int main(){
     results[0]=R;
     results[1]=K;
     results[2]=deltaP;
-    results[3]=F
+    results[3]=F;
+    for (int result = 0; result < 4; result++) {
+        printf("%lf", results[result]);
+
+    }
     
 
 
