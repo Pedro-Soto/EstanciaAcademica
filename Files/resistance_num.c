@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <unistd.h>
-#define PI 3.14159265358979323846 
+#define Pipe 3.14159265358979323846 
 int main(){
     int zmax, amp, b0;
     double b, eta, eta1, eta2, Deltaz, z, zinterf1, zinterf2, R, K, deltaP, F;
@@ -23,7 +23,7 @@ int main(){
         if (zinterf1 > zinterf2 && (z > zinterf1 || z < zinterf2) )	{ eta=eta1; }
 
         // Compute value of b
-        b = b0 + 2.0*amp*sin(2*PI*z/zmax);
+        b = b0 + 2.0*amp*sin(2*Pipe*z/zmax);
         //usleep(100000);
         //printf("z,b.R = %f\n", b);
 
