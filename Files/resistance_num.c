@@ -40,7 +40,7 @@ int main(){
     results[1]=K;
     results[2]=deltaP;
     results[3]=F;
-    printf("%f %f %f %f\n", results[0], results[1], results[2], results[3]);
+    printf("%f %f %f %f\n", results[0], results[1], results[2], results[3])
 
 
 
