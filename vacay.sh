@@ -140,14 +140,6 @@ else
     mkdir -p "$move_dir"
 fi
 
-
-
-
-# Prompt user for confirmation on default force value
-echo "Default force is set to $default_force. Press Enter to accept, or enter a new value:"
-read force
-force=$(validate_number "$input_force" "$default_force" "force")
-
 echo ""
 
 # Prompt user for confirmation on default zmax value
@@ -191,16 +183,6 @@ amp_max=$(printf "%.0f" "$amp_max")  # Convert to integer
 
 # Main loop over the range from start to end with a step size
 
-# Display the final configuration
-echo ""
-echo "Final configuration:"
-echo "Start: $start"
-echo "End: $end"
-echo "Number of processors: $num_processors"
-echo "Force: $force"
-echo "Zmax: $zmax"
-echo "Results will be saved in: $move_dir"
-echo ""
 
 if [[ "$direction" == "s" ]]; then
     for ((i=$start; i<=$end; i+=$step_elongueur))
@@ -240,21 +222,9 @@ if [[ "$direction" == "s" ]]; then
                     for (( k=0; k<=3; k+=1))
                     do
                         start_time=$(date +%s%N) # Record start time
-
-                        # Calculate viscosity and other parameters
-                        declare mu2=$(echo "10^-$k" | bc)
-                        declare i2=$((i*i))
-                        declare xeta1=$mu1*0.5
-                        declare xeta2=$mu2*0.5
-                        declare sum_xeta=$(echo "$xeta1+$xeta2" | bc)
-                        declare K=$(echo "$i2/$(12*$sum_xeta)" | bc)
-                        declare v=$(echo "$K*$force" | bc)
-                        declare t=$(printf "%d" $(echo "2*$zmax/$v" | bc))
-                        declare data_div=$(echo "scale=2; $t / $lud_export" | bc)
-                        declare freq_data=$(printf "%.0f" "$data_div") # Frequency data for output
                         declare restart_step=0
                         declare remaining_cycles=0
-            
+
                         # Set up directory structure for results
                         dir=Tam_Prom_$i/Amp_$j/Visc_$k
                         full_dir="$base_dir/$dir"
@@ -275,13 +245,7 @@ if [[ "$direction" == "s" ]]; then
                                 restart_step=$(basename "$last_phi_file" | sed 's/^phi-\([0-9]*\)\.001-001$/\1/')
                                 restart_step=$((10#$restart_step))
                                 echo "Extracted restart_step: $restart_step"
-                                echo "Total cycles: $t"
-                                remaining_cycles=$((t - restart_step))
-                                echo "Remaining cycles: $remaining_cycles from $t"
-                            else
-                                restart_step=0
-                                remaining_cycles=$((t))
-                                echo "No phi files found, setting restart_step to $restart_step"
+                                sleep 1
                             fi
                         else
                             echo "Creating directory $full_dir"
@@ -292,6 +256,30 @@ if [[ "$direction" == "s" ]]; then
                         echo "Copying files to $full_dir"
                         cd $full_dir
                         cp -R $base_dir/Files/* $full_dir
+                        
+                        # Calculate viscosity and other parameters
+                        declare mu2=$(echo "10^-$k" | bc)
+
+                        # Run resistance_numerical solution, computes resistance
+                        sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/resistance_num.c
+                        sed -i "s/J/$j/g" $base_dir/$dir/resistance_num.c
+                        sed -i "s/I/$i/g" $base_dir/$dir/resistance_num.c
+                        sed -i "s/eta1=mu1;/eta1=$mu1;/g" $base_dir/$dir/resistance_num.c
+                        sed -i "s/eta2=mu2;/eta2=1e-$k;/g" $base_dir/$dir/resistance_num.c
+                        gcc -o resistance_num.exe resistance_num.c -lm
+                        output=$(./resistance_num.exe)
+                        read -r Resistance K deltaP force <<< "$output"
+                        echo "Resistance: $Resistance"
+                        echo "K: $K"
+                        echo "deltaP: $deltaP"
+                        echo "Force: $force"
+                        declare v=$(echo "$K*$force" | bc)
+                        declare t=$(printf "%d" $(echo "2*$zmax/$v" | bc))
+                        declare data_div=$(echo "scale=2; $t / $lud_export" | bc)
+                        declare freq_data=$(printf "%.0f" "$data_div") # Frequency data for output
+                        declare remaining_cycles=$((t - restart_step))
+
+                        
 
                         # Write sim_config file
                         {
@@ -304,8 +292,11 @@ if [[ "$direction" == "s" ]]; then
                         echo "Width : $i"
                         echo "Length : $zmax"
                         echo "amplitude : $j"
-                        echo "viscosity : $mu2"
+                        echo "viscosity1 : $mu1"
+                        echo "viscosity2 : 1e-$k"
                         echo "force : $force"
+                        echo "Resistance : $Resistance"
+                        echo "deltaP: $deltaP"
                         echo "block size : $block"
                         echo "data frequency : $freq_data"
                         echo "total cycles : $t"

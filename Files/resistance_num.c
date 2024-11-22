@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <unistd.h>
 #define PI 3.14159265358979323846 
 int main(){
     int zmax, amp, b0;
@@ -22,22 +23,25 @@ int main(){
         if (zinterf1 > zinterf2 && (z > zinterf1 || z < zinterf2) )	{ eta=eta1; }
 
         // Compute value of b
-        b = b0/2 + 2.0*amp*sin(2*PI*z/zmax);
+        b = b0 + 2.0*amp*sin(2*PI*z/zmax);
+        //usleep(100000);
+        //printf("z,b.R = %f\n", b);
 
         //Compute Resistance
-        R += 12.0*eta/(b*b)*Deltaz;
+        R += (12.0*eta/(b*b))*Deltaz;
+        // printf("z,b.R = %f, %f, %f\n", z,b,R);
 
 
     }
     K = (R != 0) ? (1 / R) : 0;
-    deltaP=1/3/5*K;
+    deltaP = (1.0 / 3.0) / (5.0 * K);
     F=deltaP/zmax;
     results[0]=R;
     results[1]=K;
     results[2]=deltaP;
     results[3]=F;
     for (int result = 0; result < 4; result++) {
-        printf("%lf", results[result]);
+        printf("%.10f\n", results[result]);
 
     }
     
