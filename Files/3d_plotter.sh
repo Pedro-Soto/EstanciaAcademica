@@ -30,7 +30,7 @@ gnuplot -persist <<- EOF
         set pm3d map
         set grid
         set isosamples 10000
-        splot  file u 3:2:( (   \$2> $j_centre - ($b / 2) - $a * cos(2 * $PI * \$3 / $zmax) && \$2< $j_centre + ($b / 2) + $a * cos(2 * $PI * \$3 / $zmax) ) ? \$4 : NaN)
+        splot  file u 3:2:( (   \$2> $j_centre - ($b / 2) - $a * sin(2 * $PI * \$3 / $zmax) && \$2< $j_centre + ($b / 2) + $a * sin(2 * $PI * \$3 / $zmax) ) ? \$4 : NaN)
         
         
     }

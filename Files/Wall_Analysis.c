@@ -81,8 +81,8 @@ int main() {
                 if (sscanf(line, "%d %d %d %f", &x, &y, &z, &phi) == 4) {
 
                     // Calculate the bounds
-                    double wall_right = j_centre + (b / 2) + a * cos(2 * M_PI * z / zmax);
-                    double wall_left = j_centre - (b / 2) - a * cos(2 * M_PI * z / zmax); 
+                    double wall_right = j_centre + (b / 2) + a * sin(2 * M_PI * z / zmax);
+                    double wall_left = j_centre - (b / 2) - a * sin(2 * M_PI * z / zmax); 
 
                     // Check if y is within the bounds
                     if (y >= wall_left && y <= wall_right) {
