@@ -12,8 +12,8 @@ int main(){
     b0=I;
     Deltaz=0.01;
     R=0;
-    eta1=VISC1;
-    eta2=VISC2;
+    eta1=mu1;
+    eta2=mu2;
     zinterf1=zmax/4;
     zinterf2=3*zmax/4;
     for (z=0; z<zmax; z+=Deltaz){
