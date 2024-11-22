@@ -95,12 +95,8 @@ int main() {
                         line_discard += 1;
                         printf("Lines discarded: %d", line_discard);
                     }
-                } else {
-                    unparsed += 1;
                 }
             }
-            // Write number of unparseable lines
-            printf("Failed to parse %d lines", unparsed);
 
             // Close all files
             fclose(file);
