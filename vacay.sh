@@ -273,12 +273,12 @@ if [[ "$direction" == "s" ]]; then
                         echo "K: $K"
                         echo "deltaP: $deltaP"
                         echo "Force: $force"
-                        declare v=$(echo "$K*$force" | bc)
-                        declare t=$(printf "%d" $(echo "2*$zmax/$v" | bc))
+                        declare speed=$(echo "$K*$deltaP" | bc)
+                        declare t=$(printf "%d" $(echo "2*$zmax/$speed" | bc))
                         declare data_div=$(echo "scale=2; $t / $lud_export" | bc)
                         declare freq_data=$(printf "%.0f" "$data_div") # Frequency data for output
                         declare remaining_cycles=$((t - restart_step))
-
+                        declare freq_config=$((freq_data*10))
                         
 
                         # Write sim_config file
@@ -297,6 +297,7 @@ if [[ "$direction" == "s" ]]; then
                         echo "force : $force"
                         echo "Resistance : $Resistance"
                         echo "deltaP: $deltaP"
+                        echo "Speed : $speed"
                         echo "block size : $block"
                         echo "data frequency : $freq_data"
                         echo "total cycles : $t"
@@ -340,7 +341,8 @@ if [[ "$direction" == "s" ]]; then
                         sed -i "s/fP_amplitude 0.00_0.00_FORCE/fP_amplitude 0.00_0.00_$force/g" $base_dir/$dir/input
                         sed -i "s/VISC1/$mu1/g" $base_dir/$dir/input
                         sed -i "s/VISC2/1e-$k/g" $base_dir/$dir/input
-                        sed -i "s/N_cycles CYCLES/N_cycles $remaining_cycles/g" $base_dir/$dir/input 
+                        sed -i "s/N_cycles CYCLES/N_cycles $remaining_cycles/g" $base_dir/$dir/input
+                        sed -i "s/freq_config FREQCONFIG/freq_config $freq_config/g" $base_dir/$dir/input
 
                             #Modify Wall_Analysis.c
                         echo ""
@@ -356,6 +358,12 @@ if [[ "$direction" == "s" ]]; then
                         sed -i "s/b=I/b=$i/g" $base_dir/$dir/plotter.sh
                         sed -i "s/a=J/a=$j/g" $base_dir/$dir/plotter.sh
                         
+                        #Modify 3d_plotter.sh
+                        sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/3d_plotter.sh
+                        sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/3d_plotter.sh
+                        sed -i "s/b=I/b=$i/g" $base_dir/$dir/3d_plotter.sh
+                        sed -i "s/a=J/a=$j/g" $base_dir/$dir/3d_plotter.sh
+
                         # Compile capillary.c
                         gcc capillary.c -o capillary.exe -lm
 
@@ -365,10 +373,10 @@ if [[ "$direction" == "s" ]]; then
 
                         echo ""
                         # Run Ludwig
-                        #chmod +x ./Ludwig.exe
-                        #ulimit -s unlimited
-                        #mpirun -np $num_processors ./Ludwig.exe input
-                        
+                        chmod +x ./Ludwig.exe
+                        ulimit -s unlimited
+                        mpirun -np $num_processors ./Ludwig.exe input
+                        #echo "This line precedes the RUN LUDWIG"
                         
                         end_time=$(date +%s%N)
 
@@ -481,12 +489,12 @@ else
                         echo "K: $K"
                         echo "deltaP: $deltaP"
                         echo "Force: $force"
-                        declare v=$(echo "$K*$force" | bc)
-                        declare t=$(printf "%d" $(echo "2*$zmax/$v" | bc))
+                        declare speed=$(echo "$K*$deltaP" | bc)
+                        declare t=$(printf "%d" $(echo "2*$zmax/$speed" | bc))
                         declare data_div=$(echo "scale=2; $t / $lud_export" | bc)
                         declare freq_data=$(printf "%.0f" "$data_div") # Frequency data for output
                         declare remaining_cycles=$((t - restart_step))
-
+                        declare freq_config=$((freq_data*10))
                         
 
                         # Write sim_config file
@@ -505,6 +513,7 @@ else
                         echo "force : $force"
                         echo "Resistance : $Resistance"
                         echo "deltaP: $deltaP"
+                        echo "Speed : $speed"
                         echo "block size : $block"
                         echo "data frequency : $freq_data"
                         echo "total cycles : $t"
@@ -548,7 +557,8 @@ else
                         sed -i "s/fP_amplitude 0.00_0.00_FORCE/fP_amplitude 0.00_0.00_$force/g" $base_dir/$dir/input
                         sed -i "s/VISC1/$mu1/g" $base_dir/$dir/input
                         sed -i "s/VISC2/1e-$k/g" $base_dir/$dir/input
-                        sed -i "s/N_cycles CYCLES/N_cycles $remaining_cycles/g" $base_dir/$dir/input 
+                        sed -i "s/N_cycles CYCLES/N_cycles $remaining_cycles/g" $base_dir/$dir/input
+                        sed -i "s/freq_config FREQCONFIG/freq_config $freq_config/g" $base_dir/$dir/input
 
                             #Modify Wall_Analysis.c
                         echo ""
@@ -564,6 +574,12 @@ else
                         sed -i "s/b=I/b=$i/g" $base_dir/$dir/plotter.sh
                         sed -i "s/a=J/a=$j/g" $base_dir/$dir/plotter.sh
                         
+                        #Modify 3d_plotter.sh
+                        sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/3d_plotter.sh
+                        sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/3d_plotter.sh
+                        sed -i "s/b=I/b=$i/g" $base_dir/$dir/3d_plotter.sh
+                        sed -i "s/a=J/a=$j/g" $base_dir/$dir/3d_plotter.sh
+
                         # Compile capillary.c
                         gcc capillary.c -o capillary.exe -lm
 
@@ -574,9 +590,9 @@ else
 
                         echo ""
                         # Run Ludwig
-                        #chmod +x ./Ludwig.exe
-                        #ulimit -s unlimited
-                        #mpirun -np $num_processors ./Ludwig.exe input
+                        chmod +x ./Ludwig.exe
+                        ulimit -s unlimited
+                        mpirun -np $num_processors ./Ludwig.exe input
                         #echo "This line precedes the RUN LUDWIG"
                         
                         end_time=$(date +%s%N)
