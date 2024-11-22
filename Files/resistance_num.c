@@ -12,8 +12,8 @@ int main(){
     b0=I;
     Deltaz=0.01;
     R=0;
-    eta1=VISC1;
-    eta2=VISC2;
+    eta1=mu1;
+    eta2=mu2;
     zinterf1=zmax/4;
     zinterf2=3*zmax/4;
     for (z=0; z<zmax; z+=Deltaz){
@@ -40,11 +40,7 @@ int main(){
     results[1]=K;
     results[2]=deltaP;
     results[3]=F;
-    for (int result = 0; result < 4; result++) {
-        printf("%.10f\n", results[result]);
-
-    }
-    
+    printf("%f %f %f %f\n", results[0], results[1], results[2], results[3]);
 
 
 
