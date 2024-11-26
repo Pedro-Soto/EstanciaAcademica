@@ -502,13 +502,18 @@ else
                         sed -i "s/eta2=mu2;/eta2=1e-$k;/g" $base_dir/$dir/resistance_num.c
                         gcc -o resistance_num.exe resistance_num.c -lm
                         output=$(./resistance_num.exe)
-                        read -r Resistance K deltaP force <<< "$output"
+                        read -r Resistance K_pedro deltaP force Kmax <<< "$output"
                         echo "Resistance: $Resistance"
-                        echo "K: $K"
+                        echo "K_pedro: $K_pedro"
                         echo "deltaP: $deltaP"
                         echo "Force: $force"
-                        declare speed=$(echo "$K*$deltaP" | bc)
-                        declare t=$(printf "%d" $(echo "2*$zmax/$speed" | bc))
+                        echo "Kmax: $Kmax"
+
+                        
+                        # Calculate speed and time, adjusting for restart step if necessary
+                        K=$(echo "$K_pedro*$zmax" | bc)
+                        declare speed=$(echo "$K*$force" | bc)
+                        declare t=$(printf "%d" $(echo "$zmax/$speed" | bc))
                         declare data_div=$(echo "scale=2; $t / $lud_export" | bc)
                         declare freq_data=$(printf "%.0f" "$data_div") # Frequency data for output
                         declare remaining_cycles=$((t - restart_step))
@@ -530,6 +535,9 @@ else
                         echo "viscosity2 : 1e-$k"
                         echo "force : $force"
                         echo "Resistance : $Resistance"
+                        echo "K : $K"
+                        echo "K_pedro : $K_pedro"
+                        echo "Kmax : $Kmax"
                         echo "deltaP: $deltaP"
                         echo "Speed : $speed"
                         echo "block size : $block"
@@ -604,7 +612,6 @@ else
                         echo ""
                         # Run capillary
                         ./capillary.exe
-                        echo "LINE AFTER RUN CAPILLARY.EXE"
 
                         echo ""
                         # Run Ludwig
