@@ -34,7 +34,7 @@ int main(){
 
     }
     K = (R != 0) ? (1 / R) : 0;
-    deltaP = (1.0 / 3.0) / (5.0 * K);
+    deltaP = (1.0 / 3.0) / (10.0 * K);
     F=deltaP/zmax;
     results[0]=R;
     results[1]=K;

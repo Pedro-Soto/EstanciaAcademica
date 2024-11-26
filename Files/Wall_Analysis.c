@@ -93,11 +93,11 @@ int main() {
                         fprintf(mapFile, "\n"); // Add an empty line after each entry
                     } else {
                         line_discard += 1;
-                        printf("Lines discarded: %d", line_discard);
                     }
                 }
             }
 
+            printf("Lines discarded: %d\n", line_discard);
             // Close all files
             fclose(file);
             fclose(tempFile);
