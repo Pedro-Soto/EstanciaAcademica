@@ -25,7 +25,9 @@ validate_number() {
 
 # Get the current directory
 current_dir=$(pwd)
+echo ""
 echo "Current directory is: $current_dir"
+echo ""
 echo "Is this correct? (Press Enter for yes, or type 'n' for no)"
 read agree_dir
 
@@ -41,9 +43,10 @@ echo ""
 
 # Display title (in Spanish)
 echo "Tamaño promedio de canal"
-
+echo ""
 # Prompt user for input values
 echo "Iniciando en "
+echo ""
 read input_start
 start=$(validate_number "$input_start" "0" "start")
 if ((start % 8 != 0 )); then
@@ -54,6 +57,7 @@ fi
 echo ""
 
 echo "Terminando en: "
+echo ""
 read input_end
 end=$(validate_number "$input_end" "0" "end")
 if ((end % 8 != 0 )); then
@@ -88,6 +92,7 @@ default_lud_export=100
 total_processors=$(nproc)
 
 echo "Enter the number of processors to run Ludwig (default is 1):" 
+echo ""
 read user_input
 num_processors=$(validate_number "$user_input" 1 "Number of processors")
 echo ""
@@ -100,6 +105,7 @@ fi
 
 # Ask the user if they wish to move results to an external disk
 echo "Do you wish to move results to an external disk? (y/n): " 
+echo ""
 read move_results
 while (( "$move_results"!= "y" && "$move_results"!= "n")); do
     echo "Invalid input. Please enter y or n."
@@ -109,6 +115,7 @@ done
 if [[ "$move_results" == "y" ]]; then
     # Check which disks are mounted and their mount points
     echo "Checking for mounted disks..."
+    echo ""
     mounted_disks=$(lsblk -o NAME,MOUNTPOINT | grep -v "^\s*loop" | grep -v "^\s*$")
 
     if [[ -z "$mounted_disks" ]]; then
@@ -122,16 +129,19 @@ if [[ "$move_results" == "y" ]]; then
     fi
 
     # Prompt user for the destination directory with tab completion
+    echo ""
     read -e -p "Please enter the destination directory (e.g., /media/username/disk_name): " dest_dir
 
     # Create Ludwig_Results directory in the specified destination
     move_dir=$dest_dir/Ludwig_Results
     mkdir -p "$move_dir"
+    echo ""
     echo "Directory Ludwig_Results created at $dest_dir"
     echo ""
 else
     
     dest_dir="."  # Default to current directory if not moving results
+    echo ""
     echo "Using the default destination directory"
     echo ""
     echo "Directory Ludwig_Results created at $base_dir"
