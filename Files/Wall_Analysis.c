@@ -12,6 +12,8 @@ int main() {
     DIR *dir;
     struct dirent *entry;
     char *pattern = "phi-";
+    char *pattern_end = ".vtk";
+    char *exclude_pattern = "_map";
     char filename[500];
     char mapFilename[500];
 
@@ -36,7 +38,8 @@ int main() {
     while ((entry = readdir(dir)) != NULL) {
         if (strncmp(entry->d_name, pattern, strlen(pattern)) == 0 &&
             strlen(entry->d_name) > 4 &&
-            strcmp(entry->d_name + strlen(entry->d_name) - 4, ".vtk") == 0) {
+            strcmp(entry->d_name + strlen(entry->d_name) - 4, ".vtk") == 0 &&
+            strstr(entry->d_name, exclude_pattern) == NULL) {
 
             snprintf(filename, sizeof(filename), "%s", entry->d_name);
             printf("Found file: %s\n", filename);

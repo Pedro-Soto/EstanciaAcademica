@@ -22,10 +22,10 @@ gnuplot -persist <<- EOF
     set ylabel 'Y-axis'
     set grid
     set title 'Plot of phi-*.vtk files'
-    num_files = system("ls phi-*.vtk | wc -l")
+    num_files = system("ls phi-*.vtk | grep -v '_map' | wc -l")
 
     # Loop over each file and plot it in the same window
-    files = system("ls phi-*.vtk")
+    files = system("ls phi-*.vtk | grep -v '_map'")
     do for [file in files] {
         print "Processing ".file
         plot file u 3:((\$4>0)?\$2:NaN), \
