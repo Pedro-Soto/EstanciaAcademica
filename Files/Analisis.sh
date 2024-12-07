@@ -16,7 +16,8 @@ gcc -o vtk_Interface.exe vtk_Interface.c -lm
 for f in phi*001 ; do echo $f; ./vtk_Interface.exe phi.001-001.meta $f; done
 #for f in vel*001 ; do echo $f; ./vtk_Interface.exe vel.001-001.meta $f; done
 
-
+gcc -o Wall_Analysis.exe Wall_Analysis.c -lm
+./Wall_Analysis.exe
 #input_file="input"
 
 # Initialize variables

@@ -49,7 +49,7 @@ N_cycles CYCLES
 # 
 ##############################################################################
 size 3_EPAISSEUR_LONGUEUR
-grid 1_1_12
+grid 1_1_PROCESSOR
 periodicity 1_1_1
 reduced_halo no
 ##############################################################################
@@ -425,7 +425,7 @@ porous_media_type   status_only
 ###############################################################################
 freq_statistics 1000
 freq_measure 10000000
-freq_config 10000000
+freq_config FREQCONFIG
 freq_phi FREQPHI
 freq_psi 55555555
 freq_vel FREQVEL
