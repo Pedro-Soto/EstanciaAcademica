@@ -382,6 +382,12 @@ if [[ "$direction" == "s" ]]; then
                         sed -i "s/b=I/b=$i/g" $base_dir/$dir/3d_plotter.sh
                         sed -i "s/a=J/a=$j/g" $base_dir/$dir/3d_plotter.sh
 
+                        #Modify Flujo_Prom.py
+                        sed -i "s/LONGUEUR/$zmax/g" $base_dir/$dir/Flujo_Prom.py
+                        sed -i "s/EPAISSEUR/$ymax/g" $base_dir/$dir/Flujo_Prom.py
+                        sed -i "s/B = ancho_canal/B = $i/g" $base_dir/$dir/Flujo_Prom.py
+                        sed -i "s/A = j/A = $j/g" $base_dir/$dir/Flujo_Prom.py
+
                         # Compile capillary.c
                         gcc capillary.c -o capillary.exe -lm
 

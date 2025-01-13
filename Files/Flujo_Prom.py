@@ -2,6 +2,7 @@ import os
 import numpy as np
 import re
 
+
 # Configuración: define cómo calcular las paredes dinámicamente
 def obtener_paredes(k):
     """
@@ -12,13 +13,12 @@ def obtener_paredes(k):
     return wall_left, wall_right
 
 # Constantes
-ZMAX = 504
-A = 5
-B = 20
-ymax = 48
+zmax = LONGUEUR
+A = j
+B = ancho_canal
+y = EPAISSEUR
 M_PI = 3.141592653589793
-JCENTRE = ymax / 2
-zmax = ZMAX
+JCENTRE = y / 2
 
 # Función para procesar un archivo individual
 def procesar_archivo(archivo, zmax):
@@ -38,7 +38,7 @@ def procesar_archivo(archivo, zmax):
                     x, y, z, vx, vy, vz = map(float, valores)
                     if z == k and x == 1.0 and wall_left < y < wall_right:
                         suma_vz += vz
-            print(f"    Suma de vz para k = {k}: {suma_vz:.6e}")
+            #print(f"    Suma de vz para k = {k}: {suma_vz:.6e}")
             resultados_k.append((k, suma_vz))
 
     # Guardar resultados de k y suma de vz en un archivo temporal
